@@ -254,6 +254,76 @@ When the backend server is running, explore the interactive API documentation:
 
 ---
 
+## 🤝 Git Workflow & Team Collaboration
+
+If you and your team members/friends are collaborating on this project, follow this standardized Git workflow:
+
+### 1. Adding Collaborators on GitHub
+The repository owner (`sathish0969`) must grant write access to team members:
+1. Go to the repository **[Settings > Collaborators](https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem/settings/access)**.
+2. Click **Add people**.
+3. Enter your friend's GitHub username or email address and send the invite.
+4. Your friend must check their email or open `https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem/invitations` to accept the invite.
+
+---
+
+### 2. How Friends Clone and Set Up the Project
+```bash
+# Clone the repository
+git clone https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem.git
+cd Cloudbasedtaskmanagementsystem
+
+# Configure personal Git credentials
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+```
+
+---
+
+### 3. Daily Workflow: Pull, Update & Push
+
+Always pull the latest changes before starting work to avoid merge conflicts:
+
+```bash
+# 1. Fetch latest changes from the main branch
+git checkout main
+git pull origin main
+
+# 2. Create your own feature branch (Recommended)
+git checkout -b feature/task-update
+
+# 3. Make your code changes, then verify status
+git status
+
+# 4. Stage modified files
+git add .
+
+# 5. Commit with a meaningful message
+git commit -m "feat: added new task filter component"
+
+# 6. Push your branch to GitHub
+git push origin feature/task-update
+```
+
+*(You can also merge and push directly to `main` if working on a shared branch):*
+```bash
+git add .
+git commit -m "update: project progress"
+git push origin main
+```
+
+---
+
+## 👥 Project Team & Contributors
+
+| Member | Role | GitHub |
+|---|---|---|
+| **Sathish S** | Project Lead & Cloud Architect | [@Sathish0969](https://github.com/Sathish0969) |
+| **Sabarinathan V** | Full-Stack Developer | [@sabarinathanfwff](https://github.com/sabarinathanfwff) |
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
