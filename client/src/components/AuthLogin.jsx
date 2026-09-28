@@ -3,7 +3,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck } from 'lu
 
 export default function AuthLogin({ role, initialMode = 'login', onBack, onLoginSuccess }) {
   const isManager = role === 'manager';
-  
+  // Login or register
   const [authMode, setAuthMode] = useState(initialMode); // 'login' | 'create-account'
   const isRegister = authMode === 'create-account';
 
@@ -83,12 +83,12 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
             </h1>
             <p className="tf-login-subtitle">
               {isRegister
-                ? (isManager 
-                    ? 'Register your manager account to orchestrate sprints and teams.' 
-                    : 'Create your employee account to view tasks and track progress.')
-                : (isManager 
-                    ? 'Manage your team, assign tasks and track progress.' 
-                    : 'View your tasks, update progress and achieve goals.')}
+                ? (isManager
+                  ? 'Register your manager account to orchestrate sprints and teams.'
+                  : 'Create your employee account to view tasks and track progress.')
+                : (isManager
+                  ? 'Manage your team, assign tasks and track progress.'
+                  : 'View your tasks, update progress and achieve goals.')}
             </p>
           </div>
 
@@ -227,8 +227,8 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                     <span className="tf-checkbox-text">Remember me</span>
                   </label>
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className={`tf-forgot-btn ${isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
                     onClick={() => alert('Password reset link sent to your registered company email.')}
                   >
@@ -238,13 +238,13 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
               )}
 
               {/* Submit Button */}
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className={`tf-btn-submit ${isManager ? 'tf-btn-manager' : 'tf-btn-employee'}`}
                 disabled={isSubmitting}
               >
-                {isSubmitting 
-                  ? (isRegister ? 'Creating Account...' : 'Logging in...') 
+                {isSubmitting
+                  ? (isRegister ? 'Creating Account...' : 'Logging in...')
                   : (isRegister ? 'Create Account' : 'Login')}
               </button>
 
@@ -306,8 +306,8 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
               <div className="tf-scene-svg-wrap">
                 <svg viewBox="0 0 520 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="tf-scene-svg">
                   {/* Soft blush background blob */}
-                  <path d="M40 120 C100 60, 300 40, 500 110 C520 180, 380 200, 200 200 Z" fill="#FCEEE8" opacity="0.6"/>
-                  
+                  <path d="M40 120 C100 60, 300 40, 500 110 C520 180, 380 200, 200 200 Z" fill="#FCEEE8" opacity="0.6" />
+
                   {/* Desk Surface */}
                   <rect x="25" y="160" width="470" height="12" rx="4" fill="#C28B70" />
                   <rect x="40" y="172" width="16" height="28" fill="#3D4451" />
@@ -367,7 +367,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
             <div className="tf-illustration-wrapper tf-employee-scene">
               <div className="tf-scene-svg-wrap">
                 <svg viewBox="0 0 520 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="tf-scene-svg">
-                  <path d="M40 130 C120 70, 320 50, 500 120 C520 180, 380 200, 200 200 Z" fill="#E8F5E9" opacity="0.6"/>
+                  <path d="M40 130 C120 70, 320 50, 500 120 C520 180, 380 200, 200 200 Z" fill="#E8F5E9" opacity="0.6" />
 
                   {/* Desk Surface */}
                   <rect x="25" y="160" width="470" height="12" rx="4" fill="#E5E7EB" />
