@@ -83,7 +83,43 @@ export default function StatCards({ role, stats, tasks = [] }) {
     }
   ];
 
-  const cards = isManager ? managerCards : employeeCards;
+  // Team Leader cards
+  const tlCards = [
+    {
+      id: 'delegated',
+      label: 'Assigned Tasks',
+      value: totalTasksCount > 0 ? totalTasksCount : 12,
+      icon: Users,
+      cardClass: 'tf-stat-blue',
+      iconClass: 'tf-icon-blue'
+    },
+    {
+      id: 'in-progress',
+      label: 'In Progress',
+      value: stats?.inProgress ?? (inProgressCount || 5),
+      icon: Clock,
+      cardClass: 'tf-stat-amber',
+      iconClass: 'tf-icon-amber'
+    },
+    {
+      id: 'completed',
+      label: 'Completed Tasks',
+      value: stats?.completed ?? (completedCount || 6),
+      icon: Check,
+      cardClass: 'tf-stat-green',
+      iconClass: 'tf-icon-green'
+    },
+    {
+      id: 'overdue',
+      label: 'Requires Attention',
+      value: stats?.overdue ?? (overdueCount || 1),
+      icon: AlertCircle,
+      cardClass: 'tf-stat-red',
+      iconClass: 'tf-icon-red'
+    }
+  ];
+
+  const cards = role === 'teamleader' ? tlCards : isManager ? managerCards : employeeCards;
 
   return (
     <div className="tf-stats-grid">

@@ -30,10 +30,14 @@ export async function fetchTaskById(id) {
   return res.json();
 }
 
-export async function createTask(taskData) {
+export async function createTask(taskData, role) {
+  const currentRole = role || localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole
+    },
     body: JSON.stringify(taskData),
   });
   if (!res.ok) {
@@ -56,11 +60,15 @@ export async function updateTask(id, taskData) {
   return res.json();
 }
 
-export async function updateTaskStatus(id, status) {
+export async function updateTaskStatus(id, status, user = 'User', notes = null) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks/${id}/status`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify({ status, user, notes }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
@@ -69,12 +77,64 @@ export async function updateTaskStatus(id, status) {
   return res.json();
 }
 
+export async function requestTaskCompletion(id, user = 'Employee', notes = '') {
+  const currentRole = localStorage.getItem('tf_role') || 'employee';
+  const res = await fetch(`${API_BASE}/tasks/${id}/request-completion`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify({ status: 'in-review', user, notes }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to request completion');
+  }
+  return res.json();
+}
+
+export async function approveTaskCompletion(id, userName = 'Team Leader') {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/tasks/${id}/approve-completion?user_name=${encodeURIComponent(userName)}`, {
+    method: 'POST',
+    headers: {
+      'X-User-Role': currentRole,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to approve completion');
+  }
+  return res.json();
+}
+
+export async function rejectTaskCompletion(id, userName = 'Team Leader') {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/tasks/${id}/reject-completion?user_name=${encodeURIComponent(userName)}`, {
+    method: 'POST',
+    headers: {
+      'X-User-Role': currentRole,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to reject completion');
+  }
+  return res.json();
+}
+
 export async function deleteTask(id) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks/${id}`, {
     method: 'DELETE',
+    headers: {
+      'X-User-Role': currentRole,
+    },
   });
   if (!res.ok && res.status !== 204) {
-    throw new Error(`Failed to delete task: ${res.statusText}`);
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || `Failed to delete task: ${res.statusText}`);
   }
   return true;
 }
@@ -142,4 +202,98 @@ export async function addComment(taskId, { author, text }) {
   }
   return res.json();
 }
+
+// ==========================================
+// Teams API (Role-Based Team Orchestration)
+// ==========================================
+
+export async function fetchTeams() {
+  const res = await fetch(`${API_BASE}/teams`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch teams: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function createTeam(teamData) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify(teamData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to create team');
+  }
+  return res.json();
+}
+
+export async function updateTeam(teamId, updates) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams/${teamId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to update team');
+  }
+  return res.json();
+}
+
+export async function addTeamMember(teamId, memberData) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams/${teamId}/members`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify(memberData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to add team member');
+  }
+  return res.json();
+}
+
+export async function removeTeamMember(teamId, memberIdOrName) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams/${teamId}/members/${encodeURIComponent(memberIdOrName)}`, {
+    method: 'DELETE',
+    headers: {
+      'X-User-Role': currentRole,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to remove team member');
+  }
+  return res.json();
+}
+
+export async function deleteTeam(teamId) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams/${teamId}`, {
+    method: 'DELETE',
+    headers: {
+      'X-User-Role': currentRole,
+    },
+  });
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to delete team');
+  }
+  return true;
+}
+
 

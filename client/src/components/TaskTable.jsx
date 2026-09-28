@@ -10,7 +10,10 @@ import {
   ArrowRight,
   MessageSquare,
   CheckSquare,
-  Maximize2
+  Maximize2,
+  Check,
+  X,
+  ShieldAlert
 } from 'lucide-react';
 
 export default function TaskTable({
@@ -20,6 +23,8 @@ export default function TaskTable({
   onOpenDetail,
   onDeleteTask,
   onStatusChange,
+  onApproveCompletion,
+  onRejectCompletion,
   activeFilter,
   onFilterChange,
   searchQuery,
@@ -27,6 +32,8 @@ export default function TaskTable({
   onViewAll
 }) {
   const isManager = role === 'manager';
+  const isTL = role === 'teamleader';
+  const showAssigned = isTL || isManager;
   const [openActionId, setOpenActionId] = useState(null);
   const actionMenuRef = useRef(null);
 
@@ -58,7 +65,17 @@ export default function TaskTable({
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, taskItem) => {
+    if (taskItem?.completionRequested) {
+      return (
+        <span 
+          className="tf-status-badge tf-badge-pending-tl" 
+          title={isTL || isManager ? "Employee marked task completed. Needs your approval." : "Awaiting Team Leader approval"}
+        >
+          ⏳ {isTL || isManager ? 'Awaiting Approval' : 'Pending TL Approval'}
+        </span>
+      );
+    }
     switch (status) {
       case 'completed':
         return <span className="tf-status-badge tf-badge-completed">Completed</span>;
@@ -91,10 +108,10 @@ export default function TaskTable({
       <div className="tf-table-top-bar">
         <div className="tf-table-title-group">
           <h2 className="tf-table-heading">
-            {isManager ? 'Recent Tasks' : 'My Tasks'}
+            {isTL ? 'Task Assignment & Orchestration' : isManager ? 'Live Sprint Workstream' : 'My Deliverables'}
           </h2>
 
-          {/* Employee Filter Tabs */}
+          {/* Filter Tabs */}
           {!isManager && (
             <div className="tf-filter-tabs">
               {tabs.map((tab) => {
@@ -148,7 +165,7 @@ export default function TaskTable({
           <thead>
             <tr>
               <th className="tf-th-title">Task Name</th>
-              {isManager && <th className="tf-th-assigned">Assigned To</th>}
+              {showAssigned && <th className="tf-th-assigned">Assigned To</th>}
               <th className="tf-th-project">Project</th>
               <th className="tf-th-due">Due Date</th>
               <th className="tf-th-status">Status</th>
@@ -158,7 +175,7 @@ export default function TaskTable({
           <tbody>
             {tasks.length === 0 ? (
               <tr>
-                <td colSpan={isManager ? 6 : 5} className="tf-empty-cell">
+                <td colSpan={showAssigned ? 6 : 5} className="tf-empty-cell">
                   <div className="tf-empty-state">
                     <p>No tasks found matching your criteria.</p>
                   </div>
@@ -206,8 +223,8 @@ export default function TaskTable({
                       </div>
                     </td>
 
-                    {/* Assigned To (Manager only) */}
-                    {isManager && (
+                    {/* Assigned To (Manager & TL) */}
+                    {showAssigned && (
                       <td className="tf-td-assigned">
                         <span className="tf-assignee-name">
                           {task.assignedTo || 'Arun K'}
@@ -229,14 +246,37 @@ export default function TaskTable({
                       </span>
                     </td>
 
-                    {/* Status with Quick Click */}
+                    {/* Status with Quick Click & Inline TL Approval */}
                     <td className="tf-td-status">
-                      <div 
-                        onClick={() => handleOpenDetailOrEdit(task)}
-                        style={{ cursor: 'pointer' }}
-                        title="Click to inspect task status"
-                      >
-                        {getStatusBadge(task.status)}
+                      <div className="tf-status-cell-content">
+                        <div 
+                          onClick={() => handleOpenDetailOrEdit(task)}
+                          style={{ cursor: 'pointer' }}
+                          title="Click to inspect task status"
+                        >
+                          {getStatusBadge(task.status, task)}
+                        </div>
+
+                        {task.completionRequested && (isTL || isManager) && (
+                          <div className="tf-tl-quick-actions" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              className="tf-btn-quick-approve"
+                              onClick={() => onApproveCompletion && onApproveCompletion(task.id)}
+                              title="Approve Completion"
+                            >
+                              <Check size={11} /> Approve
+                            </button>
+                            <button
+                              type="button"
+                              className="tf-btn-quick-reject"
+                              onClick={() => onRejectCompletion && onRejectCompletion(task.id)}
+                              title="Reject / Request Revisions"
+                            >
+                              <X size={11} /> Reject
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
 
@@ -255,6 +295,35 @@ export default function TaskTable({
 
                         {openActionId === task.id && (
                           <div className="tf-action-dropdown">
+                            {/* Completion Approval Section for TL / Manager */}
+                            {task.completionRequested && (isTL || isManager) && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row tf-row-approve"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onApproveCompletion && onApproveCompletion(task.id);
+                                  }}
+                                >
+                                  <Check size={14} style={{ color: 'var(--success-color, #10b981)' }} />
+                                  <span style={{ color: 'var(--success-color, #10b981)', fontWeight: 600 }}>Approve Completion</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row tf-row-reject"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onRejectCompletion && onRejectCompletion(task.id);
+                                  }}
+                                >
+                                  <X size={14} style={{ color: 'var(--danger-color, #ef4444)' }} />
+                                  <span style={{ color: 'var(--danger-color, #ef4444)', fontWeight: 600 }}>Reject / Revisions</span>
+                                </button>
+                                <div className="tf-dropdown-divider"></div>
+                              </>
+                            )}
+
                             <button
                               type="button"
                               className="tf-dropdown-row"
@@ -313,22 +382,26 @@ export default function TaskTable({
                               }}
                             >
                               <CheckCircle2 size={14} />
-                              <span>Mark Completed</span>
+                              <span>{role === 'employee' ? 'Request Completion Approval' : 'Mark Completed'}</span>
                             </button>
 
-                            <div className="tf-dropdown-divider"></div>
-                            <button
-                              type="button"
-                              className="tf-dropdown-row tf-row-danger"
-                              onClick={() => {
-                                setOpenActionId(null);
-                                onDeleteTask(task.id);
-                              }}
-                              title="Delete task from workspace"
-                            >
-                              <Trash2 size={14} />
-                              <span>Delete Task</span>
-                            </button>
+                            {role !== 'employee' && (
+                              <>
+                                <div className="tf-dropdown-divider"></div>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row tf-row-danger"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onDeleteTask(task.id);
+                                  }}
+                                  title="Delete task from workspace"
+                                >
+                                  <Trash2 size={14} />
+                                  <span>Delete Task</span>
+                                </button>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>

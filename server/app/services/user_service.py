@@ -25,7 +25,6 @@ def _verify_password(password: str, stored_hash: str, salt: str) -> bool:
     candidate_hash, _ = _hash_password(password, salt)
     return secrets.compare_digest(candidate_hash, stored_hash)
 
-DEFAULT_USERS = [
     {
         "id": "usr-mgr-101",
         "name": "Sabarinathan V",
@@ -34,6 +33,17 @@ DEFAULT_USERS = [
         "salt": "default_mgr_salt_01",
         "role": "manager",
         "title": "Engineering Manager",
+        "picture": None,
+        "createdAt": "2026-09-18T09:00:00"
+    },
+    {
+        "id": "usr-tl-103",
+        "name": "Sabarinathan V",
+        "email": "sabarinathan.tl@taskflow.cloud",
+        "passwordHash": _hash_password("Password123!", "default_tl_salt_03")[0],
+        "salt": "default_tl_salt_03",
+        "role": "teamleader",
+        "title": "Team Leader (TL)",
         "picture": None,
         "createdAt": "2026-09-18T09:00:00"
     },
@@ -97,7 +107,12 @@ class UserService:
         user_id = f"usr-{uuid.uuid4().hex[:10]}"
         now = datetime.utcnow().isoformat()
 
-        title = "Engineering Manager" if role == "manager" else "Cloud Developer"
+        if role == "manager":
+            title = "Engineering Manager"
+        elif role in ["teamleader", "tl"]:
+            title = "Team Leader (TL)"
+        else:
+            title = "Cloud Developer"
 
         new_user = {
             "id": user_id,
@@ -105,7 +120,7 @@ class UserService:
             "email": clean_email,
             "passwordHash": password_hash,
             "salt": salt,
-            "role": role,
+            "role": "teamleader" if role in ["teamleader", "tl"] else role,
             "title": title,
             "picture": None,
             "createdAt": now
@@ -129,9 +144,15 @@ class UserService:
             raise ValueError("Incorrect password. Please verify your credentials.")
 
         # Update role if user explicitly selected a role during login
-        if preferred_role and preferred_role in ["manager", "employee"] and preferred_role != user.get("role"):
-            user["role"] = preferred_role
-            user["title"] = "Engineering Manager" if preferred_role == "manager" else "Senior Cloud Engineer"
+        normalized_role = "teamleader" if preferred_role in ["teamleader", "tl"] else preferred_role
+        if normalized_role and normalized_role in ["manager", "teamleader", "employee"] and normalized_role != user.get("role"):
+            user["role"] = normalized_role
+            if normalized_role == "manager":
+                user["title"] = "Engineering Manager"
+            elif normalized_role == "teamleader":
+                user["title"] = "Team Leader (TL)"
+            else:
+                user["title"] = "Senior Cloud Engineer"
             users = self._read_users()
             for i, u in enumerate(users):
                 if u["id"] == user["id"]:

@@ -9,7 +9,9 @@ import {
   ArrowRightCircle,
   AlertCircle,
   MessageSquare,
-  Maximize2
+  Maximize2,
+  Check,
+  X
 } from 'lucide-react';
 
 export default function TaskCard({ 
@@ -18,10 +20,13 @@ export default function TaskCard({
   onOpenDetail,
   onDelete, 
   onStatusChange,
+  onApproveCompletion,
+  onRejectCompletion,
   isDragging,
   onDragStart,
   onDragEnd,
-  canDelete = true
+  canDelete = true,
+  role = 'manager'
 }) {
   const {
     id,
@@ -113,6 +118,35 @@ export default function TaskCard({
         </div>
       </div>
 
+      {/* Completion Requested Banner / Badge */}
+      {task.completionRequested && (
+        <div className="card-completion-requested-banner">
+          <div className="card-completion-text">
+            <span>⏳ {role === 'teamleader' || role === 'manager' ? 'Awaiting Your Approval' : 'Pending TL Approval'}</span>
+          </div>
+          {(role === 'teamleader' || role === 'manager') && (
+            <div className="card-completion-quick-btns" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="card-quick-approve-btn"
+                onClick={() => onApproveCompletion && onApproveCompletion(task.id)}
+                title="Approve Completion"
+              >
+                <Check size={11} /> Approve
+              </button>
+              <button
+                type="button"
+                className="card-quick-reject-btn"
+                onClick={() => onRejectCompletion && onRejectCompletion(task.id)}
+                title="Reject / Request Changes"
+              >
+                <X size={11} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Task Title & Description */}
       <h3 className="task-card-title" onClick={handleOpenDetailOrEdit} title="Click to view full details">
         {title}
@@ -193,7 +227,7 @@ export default function TaskCard({
           <option value="to-do">To Do</option>
           <option value="in-progress">In Progress</option>
           <option value="in-review">In Review</option>
-          <option value="completed">Completed</option>
+          <option value="completed">{role === 'employee' ? 'Completed (Need TL)' : 'Completed'}</option>
           <option value="backlog">Backlog</option>
         </select>
       </div>

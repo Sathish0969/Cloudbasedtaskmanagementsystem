@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from app.config import STORAGE_TYPE, AWS_REGION, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME
 from app.routes.tasks import router as tasks_router
 from app.routes.attachments import router as attachments_router
+from app.routes.teams import router as teams_router
 from app.routes.websocket import router as ws_router
 from app.services.websocket_manager import ws_manager
 from app.services.storage import get_storage_info
@@ -30,6 +31,7 @@ app.add_middleware(
 # Mount API & WebSocket routers
 app.include_router(tasks_router, prefix="/api")
 app.include_router(attachments_router, prefix="/api")
+app.include_router(teams_router, prefix="/api")
 app.include_router(ws_router) # Mounts /ws/tasks
 
 @app.get("/api/health")

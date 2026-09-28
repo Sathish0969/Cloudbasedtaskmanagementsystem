@@ -35,10 +35,12 @@ export default function KanbanBoard({
   onOpenDetail,
   onDeleteTask,
   onStatusChange,
+  onApproveCompletion,
+  onRejectCompletion,
   onQuickAdd,
   role = 'manager'
 }) {
-  const isManager = role === 'manager';
+  const isTL = role === 'teamleader';
   const [draggingTaskId, setDraggingTaskId] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
 
@@ -107,11 +109,11 @@ export default function KanbanBoard({
                   <span className="column-count-badge">{colTasks.length}</span>
                 </div>
 
-                {isManager && (
+                {isTL && (
                   <button
                     className="btn-icon column-add-btn"
                     onClick={() => onQuickAdd(col.id)}
-                    title={`Add task to ${col.title}`}
+                    title={`Add task to ${col.title} (TL Only)`}
                     aria-label={`Add task to ${col.title}`}
                   >
                     <Plus size={15} />
@@ -124,7 +126,7 @@ export default function KanbanBoard({
                 {colTasks.length === 0 ? (
                   <div className="empty-column-placeholder">
                     <p className="empty-placeholder-text">No tasks</p>
-                    {isManager && (
+                    {isTL && (
                       <button 
                         className="empty-add-btn"
                         onClick={() => onQuickAdd(col.id)}
@@ -142,10 +144,13 @@ export default function KanbanBoard({
                       onOpenDetail={onOpenDetail}
                       onDelete={onDeleteTask}
                       onStatusChange={onStatusChange}
+                      onApproveCompletion={onApproveCompletion}
+                      onRejectCompletion={onRejectCompletion}
                       isDragging={draggingTaskId === task.id}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
-                      canDelete={true}
+                      canDelete={role !== 'employee'}
+                      role={role}
                     />
                   ))
                 )}

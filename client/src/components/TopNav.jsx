@@ -8,7 +8,9 @@ import {
   LogOut, 
   Radio, 
   Zap,
-  Command
+  Command,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function TopNav({
@@ -21,6 +23,8 @@ export default function TopNav({
   wsStatus = 'connected'
 }) {
   const isManager = role === 'manager';
+  const isTL = role === 'teamleader';
+  const isEmployee = role === 'employee';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -56,22 +60,36 @@ export default function TopNav({
             </span>
           </div>
 
-          {/* Quick Shortcut Badge */}
-          <div className="tf-shortcut-pill" title="Press 'N' key anytime to create a new task">
-            <span className="tf-kbd-key">N</span>
-            <span className="tf-kbd-text">New Task</span>
-          </div>
+          {/* Quick Shortcut Badge - TL only */}
+          {isTL && (
+            <div className="tf-shortcut-pill" title="Press 'N' key anytime to assign a new task">
+              <span className="tf-kbd-key">N</span>
+              <span className="tf-kbd-text">Assign Task</span>
+            </div>
+          )}
 
-          {/* Quick Create Task button (Available in both roles) */}
-          <button 
-            type="button" 
-            className="tf-quick-add-nav-btn"
-            onClick={onOpenAssignModal}
-            title="Create and Assign New Task"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>New Task</span>
-          </button>
+          {/* Quick Create Task button - TL Exclusive */}
+          {isTL ? (
+            <button 
+              type="button" 
+              className="tf-quick-add-nav-btn tf-btn-teamleader"
+              onClick={onOpenAssignModal}
+              title="Create and Assign New Task (TL Exclusive)"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>Assign Task</span>
+            </button>
+          ) : isManager ? (
+            <div className="tf-role-restriction-pill tf-pill-manager" title="Task assignment is delegated exclusively to Team Leader (TL).">
+              <Lock size={13} />
+              <span>Task Assignment Delegated to TL</span>
+            </div>
+          ) : (
+            <div className="tf-role-restriction-pill tf-pill-employee" title="Task creation restricted to Team Leader.">
+              <Lock size={13} />
+              <span>View Only (No Creation Access)</span>
+            </div>
+          )}
 
           {/* Notifications button */}
           <div className="tf-notif-container">
@@ -130,7 +148,7 @@ export default function TopNav({
               </div>
               <div className="tf-profile-info">
                 <span className="tf-profile-name">{user?.name || 'Sabarinathan V'}</span>
-                <span className="tf-profile-role">{role === 'manager' ? 'Manager' : 'Employee'}</span>
+                <span className="tf-profile-role">{isTL ? 'Team Leader (TL)' : isManager ? 'Manager' : 'Employee'}</span>
               </div>
               <ChevronDown size={16} className={`tf-chevron ${showProfileMenu ? 'tf-chevron-open' : ''}`} />
             </button>
@@ -140,7 +158,7 @@ export default function TopNav({
                 <div className="tf-dropdown-header">
                   <p className="tf-dropdown-name">{user?.name || 'Sabarinathan V'}</p>
                   <p className="tf-dropdown-email">
-                    {user?.email || (isManager ? 'sabarinathan.mgr@taskflow.cloud' : 'sabarinathan.emp@taskflow.cloud')}
+                    {user?.email || (isTL ? 'sabarinathan.tl@taskflow.cloud' : isManager ? 'sabarinathan.mgr@taskflow.cloud' : 'sabarinathan.emp@taskflow.cloud')}
                   </p>
                 </div>
                 <div className="tf-dropdown-divider"></div>
@@ -166,18 +184,34 @@ export default function TopNav({
         <div className="tf-greeting-block">
           <h1 className="tf-greeting-title">Good Morning, {user?.name ? user.name.split(' ')[0] : 'Sabarinathan'}!</h1>
           <p className="tf-greeting-subtitle">
-            {isManager ? "Here's an overview of your team's live workstream." : "Here are your active deliverables and sprint tasks."}
+            {isTL
+              ? "Assign and distribute sprint deliverables from the manager to team members."
+              : isManager
+              ? "Here's an overview of your team's live workstream and velocity."
+              : "Here are your active deliverables and sprint tasks."}
           </p>
         </div>
 
-        <button 
-          type="button" 
-          className="tf-btn-assign"
-          onClick={onOpenAssignModal}
-        >
-          <Plus size={18} strokeWidth={2.5} />
-          <span>{isManager ? 'Assign Task' : 'New Task'}</span>
-        </button>
+        {isTL ? (
+          <button 
+            type="button" 
+            className="tf-btn-assign tf-btn-teamleader"
+            onClick={onOpenAssignModal}
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            <span>Assign Task from Manager</span>
+          </button>
+        ) : isManager ? (
+          <div className="tf-role-restriction-pill tf-pill-manager" style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
+            <Lock size={15} />
+            <span>Task Creation Delegated to Team Leader</span>
+          </div>
+        ) : (
+          <div className="tf-role-restriction-pill tf-pill-employee" style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
+            <Lock size={15} />
+            <span>View Only (Creation Restricted)</span>
+          </div>
+        )}
       </div>
     </div>
   );

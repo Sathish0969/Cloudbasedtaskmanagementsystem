@@ -21,8 +21,10 @@ class UserRegisterRequest(BaseModel):
     @classmethod
     def validate_role(cls, v: str) -> str:
         clean = v.strip().lower()
-        if clean not in ["manager", "employee"]:
-            return "manager"
+        if clean in ["tl", "teamleader", "team_leader"]:
+            return "teamleader"
+        if clean not in ["manager", "teamleader", "employee"]:
+            return "teamleader"
         return clean
 
 class UserLoginRequest(BaseModel):

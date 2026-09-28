@@ -3,13 +3,22 @@ import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck } from 'lu
 
 export default function AuthLogin({ role, initialMode = 'login', onBack, onLoginSuccess }) {
   const isManager = role === 'manager';
+  const isTL = role === 'teamleader';
+  const isEmployee = role === 'employee';
+
+  const roleDisplayName = isTL ? 'Team Leader (TL)' : isManager ? 'Manager' : 'Employee';
+  
   // Login or register
   const [authMode, setAuthMode] = useState(initialMode); // 'login' | 'create-account'
   const isRegister = authMode === 'create-account';
 
   const [fullName, setFullName] = useState(isRegister ? '' : 'Sabarinathan V');
   const [email, setEmail] = useState(
-    isManager ? 'sabarinathan.mgr@taskflow.cloud' : 'sabarinathan.emp@taskflow.cloud'
+    isTL 
+      ? 'sabarinathan.tl@taskflow.cloud' 
+      : isManager 
+      ? 'sabarinathan.mgr@taskflow.cloud' 
+      : 'sabarinathan.emp@taskflow.cloud'
   );
   const [password, setPassword] = useState('••••••••••••');
   const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
@@ -44,7 +53,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
         role,
         name: fullName.trim() || 'Sabarinathan V',
         email,
-        title: isManager ? 'Engineering Manager' : 'Senior Cloud Engineer'
+        title: isTL ? 'Team Leader / Technical Lead' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer'
       });
     }, 400);
   };
@@ -55,7 +64,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
       <header className="tf-login-header">
         <div className="tf-login-brand-group">
           <div className="tf-brand">
-            <div className={`tf-logo-icon ${isManager ? 'tf-terracotta-bg' : 'tf-green-bg'}`}>
+            <div className={`tf-logo-icon ${isTL ? 'tf-indigo-bg' : isManager ? 'tf-terracotta-bg' : 'tf-green-bg'}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
@@ -76,18 +85,22 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
         <div className="tf-login-content">
           <div className="tf-login-titles">
             <h1 className="tf-login-heading">
-              <span className={isManager ? 'tf-text-terracotta' : 'tf-text-green'}>
-                {isManager ? 'Manager' : 'Employee'}
+              <span className={isTL ? 'tf-text-indigo' : isManager ? 'tf-text-terracotta' : 'tf-text-green'}>
+                {roleDisplayName}
               </span>{' '}
               {isRegister ? 'Create Account' : 'Login'}
             </h1>
             <p className="tf-login-subtitle">
               {isRegister
-                ? (isManager
-                  ? 'Register your manager account to orchestrate sprints and teams.'
+                ? (isTL
+                  ? 'Register your Team Leader account to orchestrate sprints and assign tasks.'
+                  : isManager
+                  ? 'Register your manager account to oversee projects and teams.'
                   : 'Create your employee account to view tasks and track progress.')
-                : (isManager
-                  ? 'Manage your team, assign tasks and track progress.'
+                : (isTL
+                  ? 'Authorize and assign sprint deliverables from manager to employees.'
+                  : isManager
+                  ? 'Manage your team, track sprint progress and review deliverables.'
                   : 'View your tasks, update progress and achieve goals.')}
             </p>
           </div>
@@ -221,7 +234,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                       onChange={(e) => setRememberMe(e.target.checked)}
                       className="tf-hidden-checkbox"
                     />
-                    <span className={`tf-custom-checkbox ${rememberMe ? (isManager ? 'tf-cb-manager' : 'tf-cb-employee') : ''}`}>
+                    <span className={`tf-custom-checkbox ${rememberMe ? (isTL ? 'tf-cb-teamleader' : isManager ? 'tf-cb-manager' : 'tf-cb-employee') : ''}`}>
                       {rememberMe && <Check size={12} strokeWidth={3} />}
                     </span>
                     <span className="tf-checkbox-text">Remember me</span>
@@ -229,7 +242,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
 
                   <button
                     type="button"
-                    className={`tf-forgot-btn ${isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
+                    className={`tf-forgot-btn ${isTL ? 'tf-link-indigo' : isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
                     onClick={() => alert('Password reset link sent to your registered company email.')}
                   >
                     Forgot password?
@@ -240,7 +253,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
               {/* Submit Button */}
               <button
                 type="submit"
-                className={`tf-btn-submit ${isManager ? 'tf-btn-manager' : 'tf-btn-employee'}`}
+                className={`tf-btn-submit ${isTL ? 'tf-btn-teamleader' : isManager ? 'tf-btn-manager' : 'tf-btn-employee'}`}
                 disabled={isSubmitting}
               >
                 {isSubmitting
@@ -255,7 +268,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                     Already have an account?{' '}
                     <button
                       type="button"
-                      className={`tf-auth-switch-link ${isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
+                      className={`tf-auth-switch-link ${isTL ? 'tf-link-indigo' : isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
                       onClick={() => {
                         setAuthMode('login');
                         setFormError('');
@@ -269,7 +282,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                     Don't have an account?{' '}
                     <button
                       type="button"
-                      className={`tf-auth-switch-link ${isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
+                      className={`tf-auth-switch-link ${isTL ? 'tf-link-indigo' : isManager ? 'tf-link-terracotta' : 'tf-link-green'}`}
                       onClick={() => {
                         setAuthMode('create-account');
                         setFormError('');
@@ -291,7 +304,67 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
 
         {/* Illustrated Workspace Scene (Custom Pixel-Perfect SVG) */}
         <div className="tf-login-illustration-container">
-          {isManager ? (
+          {isTL ? (
+            /* Team Leader Orchestration & Assignment Scene */
+            <div className="tf-illustration-wrapper tf-teamleader-scene">
+              <div className="tf-calligraphy tf-tl-calligraphy">
+                <span>Authorize</span>
+                <span className="tf-arrow-down">↘</span>
+                <span>Assign</span>
+                <span className="tf-arrow-down">↘</span>
+                <span>Empower</span>
+              </div>
+
+              <div className="tf-scene-svg-wrap">
+                <svg viewBox="0 0 520 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="tf-scene-svg">
+                  {/* Soft indigo background blob */}
+                  <path d="M40 120 C110 50, 310 40, 490 100 C520 170, 390 200, 190 200 Z" fill="#EEF2FF" opacity="0.8" />
+
+                  {/* Desk Surface */}
+                  <rect x="25" y="160" width="470" height="12" rx="4" fill="#3B82F6" />
+                  <rect x="40" y="172" width="16" height="28" fill="#1E293B" />
+                  <rect x="464" y="172" width="16" height="28" fill="#1E293B" />
+
+                  {/* Manager Requests Queue Card (Source) */}
+                  <g transform="translate(60, 60)">
+                    <rect width="105" height="88" rx="8" fill="#FFFFFF" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.06))" stroke="#E0E7FF" />
+                    <rect x="10" y="12" width="85" height="16" rx="4" fill="#F1F5F9" />
+                    <text x="14" y="24" fill="#475569" fontSize="8" fontWeight="700">Manager Sprints</text>
+                    <rect x="10" y="36" width="60" height="8" rx="2" fill="#93C5FD" />
+                    <rect x="10" y="50" width="75" height="8" rx="2" fill="#BFDBFE" />
+                    <rect x="10" y="64" width="50" height="8" rx="2" fill="#E2E8F0" />
+                    <circle cx="85" cy="74" r="8" fill="#2563EB" />
+                    <text x="82" y="77" fill="#FFFFFF" fontSize="9" fontWeight="bold">→</text>
+                  </g>
+
+                  {/* TL Assignment Console (Center Active Hub) */}
+                  <g transform="translate(190, 40)">
+                    <rect width="130" height="112" rx="10" fill="#FFFFFF" filter="drop-shadow(0 6px 16px rgba(37,99,235,0.12))" stroke="#93C5FD" strokeWidth="1.5" />
+                    <rect x="10" y="10" width="110" height="20" rx="4" fill="#EFF6FF" />
+                    <text x="16" y="24" fill="#1D4ED8" fontSize="9" fontWeight="700">🛡️ TL Assign Console</text>
+                    <rect x="12" y="38" width="106" height="16" rx="3" fill="#F8FAFC" stroke="#E2E8F0" />
+                    <text x="18" y="49" fill="#334155" fontSize="7.5" fontWeight="600">Assign: Deploy DynamoDB</text>
+                    <rect x="12" y="60" width="106" height="16" rx="3" fill="#F8FAFC" stroke="#E2E8F0" />
+                    <text x="18" y="71" fill="#334155" fontSize="7.5" fontWeight="600">Assignee: Arun K (Lead)</text>
+                    <rect x="12" y="82" width="106" height="20" rx="5" fill="#2563EB" />
+                    <text x="34" y="95" fill="#FFFFFF" fontSize="8.5" fontWeight="700">✓ Assign to Sprint</text>
+                  </g>
+
+                  {/* Delegated Team Members List Card (Right) */}
+                  <g transform="translate(345, 65)">
+                    <rect width="105" height="84" rx="8" fill="#FFFFFF" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.06))" stroke="#E0E7FF" />
+                    <text x="12" y="18" fill="#475569" fontSize="8.5" fontWeight="700">Team Members</text>
+                    <circle cx="20" cy="34" r="8" fill="#3B82F6" />
+                    <rect x="34" y="30" width="55" height="7" rx="2" fill="#CBD5E1" />
+                    <circle cx="20" cy="52" r="8" fill="#10B981" />
+                    <rect x="34" y="48" width="45" height="7" rx="2" fill="#CBD5E1" />
+                    <circle cx="20" cy="70" r="8" fill="#F59E0B" />
+                    <rect x="34" y="66" width="50" height="7" rx="2" fill="#CBD5E1" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          ) : isManager ? (
             /* Manager Desk Scene */
             <div className="tf-illustration-wrapper tf-manager-scene">
               <div className="tf-calligraphy tf-manager-calligraphy">

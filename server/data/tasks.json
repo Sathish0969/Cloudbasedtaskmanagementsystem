@@ -1,5 +1,175 @@
 [
   {
+    "id": "task-fa91a7",
+    "title": "Approval Workflow Test Task",
+    "description": "Requires employee completion and TL approval",
+    "assignedTo": "Dev Employee",
+    "project": "Web App",
+    "status": "in-progress",
+    "priority": "high",
+    "dueDate": "",
+    "tags": [],
+    "subtasks": [],
+    "comments": [
+      {
+        "id": "comm-9044a3",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T21:18:17.934099"
+      },
+      {
+        "id": "comm-410bfc",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T21:18:57.399546"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-6b6fd5",
+        "user": "Dev Employee",
+        "action": "Created task in workspace",
+        "timestamp": "2026-09-28T21:18:17.720536"
+      },
+      {
+        "id": "act-e44c20",
+        "user": "Dev Employee",
+        "action": "Changed status to In Review",
+        "timestamp": "2026-09-28T21:18:17.726155"
+      },
+      {
+        "id": "act-c8e1a1",
+        "user": "Lead Architect",
+        "action": "Changed status to Completed",
+        "timestamp": "2026-09-28T21:18:17.735224"
+      },
+      {
+        "id": "act-a98bcf",
+        "user": "Sabarinathan V",
+        "action": "Changed status to In Progress",
+        "timestamp": "2026-09-28T21:18:17.741192"
+      },
+      {
+        "id": "act-185da5",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T21:18:17.934099"
+      },
+      {
+        "id": "act-9bf1e7",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T21:18:57.399546"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-28T21:18:17.720536",
+    "updatedAt": "2026-09-28T21:18:57.399546",
+    "completionRequested": false,
+    "completionRequestedBy": "Dev Employee",
+    "completionRequestedAt": "2026-09-28T21:18:17.725691",
+    "completionNotes": "Completed sprint work, please verify",
+    "user": "Sabarinathan V",
+    "completionApprovedBy": "Lead Architect",
+    "completionApprovedAt": "2026-09-28T21:18:17.734730"
+  },
+  {
+    "id": "task-c48dee",
+    "title": "Approval Workflow Test Task",
+    "description": "Requires employee completion and TL approval",
+    "assignedTo": "Dev Employee",
+    "project": "Web App",
+    "status": "in-review",
+    "priority": "high",
+    "dueDate": "",
+    "tags": [],
+    "subtasks": [],
+    "comments": [
+      {
+        "id": "comm-8d7092",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T21:17:37.170307"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-723bc0",
+        "user": "Dev Employee",
+        "action": "Created task in workspace",
+        "timestamp": "2026-09-28T21:17:37.000650"
+      },
+      {
+        "id": "act-2fed1e",
+        "user": "Sabarinathan V",
+        "action": "Changed status to In Review",
+        "timestamp": "2026-09-28T21:17:37.006057"
+      },
+      {
+        "id": "act-c9b772",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T21:17:37.170307"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-28T21:17:37.000650",
+    "updatedAt": "2026-09-28T21:17:37.170307",
+    "completionRequested": true,
+    "completionRequestedBy": "Sabarinathan V",
+    "completionRequestedAt": "2026-09-28T21:17:37.005653",
+    "completionNotes": "Completed sprint work, please verify",
+    "user": "Sabarinathan V"
+  },
+  {
+    "id": "task-196d9e",
+    "title": "Approval Workflow Test Task",
+    "description": "Requires employee completion and TL approval",
+    "assignedTo": "Dev Employee",
+    "project": "Web App",
+    "status": "in-review",
+    "priority": "high",
+    "dueDate": "",
+    "tags": [],
+    "subtasks": [],
+    "comments": [
+      {
+        "id": "comm-fe7a74",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T21:16:43.763002"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-aaac0b",
+        "user": "Dev Employee",
+        "action": "Created task in workspace",
+        "timestamp": "2026-09-28T21:16:43.383829"
+      },
+      {
+        "id": "act-dfe89c",
+        "user": "Sabarinathan V",
+        "action": "Changed status to In Review",
+        "timestamp": "2026-09-28T21:16:43.390249"
+      },
+      {
+        "id": "act-eba88c",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T21:16:43.763002"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-28T21:16:43.383829",
+    "updatedAt": "2026-09-28T21:16:43.763002",
+    "completionRequested": true,
+    "completionRequestedBy": "Sabarinathan V",
+    "completionRequestedAt": "2026-09-28T21:16:43.389705",
+    "completionNotes": "Completed sprint work, please verify",
+    "user": "Sabarinathan V"
+  },
+  {
     "id": "task-cfbde9",
     "title": "gd",
     "description": "",
@@ -34,6 +204,30 @@
         "author": "Antigravity Reviewer",
         "text": "Real-time task synchronization test comment.",
         "createdAt": "2026-09-28T15:38:21.258693"
+      },
+      {
+        "id": "comm-ac69ed",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T19:17:03.291450"
+      },
+      {
+        "id": "comm-8d8a2e",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T19:38:20.791109"
+      },
+      {
+        "id": "comm-fbc65e",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T19:46:48.329784"
+      },
+      {
+        "id": "comm-b16250",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T19:59:49.057567"
       }
     ],
     "activityLog": [
@@ -72,11 +266,35 @@
         "user": "Antigravity Reviewer",
         "action": "Added comment: \"Real-time task synchronization...\"",
         "timestamp": "2026-09-28T15:38:21.258693"
+      },
+      {
+        "id": "act-ea941a",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T19:17:03.291450"
+      },
+      {
+        "id": "act-0a783f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T19:38:20.791109"
+      },
+      {
+        "id": "act-dc2932",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T19:46:48.329784"
+      },
+      {
+        "id": "act-feb755",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T19:59:49.057567"
       }
     ],
     "attachments": [],
     "createdAt": "2026-09-23T23:16:41.796385",
-    "updatedAt": "2026-09-28T15:38:21.258693",
+    "updatedAt": "2026-09-28T19:59:49.057567",
     "user": "Sabarinathan V"
   },
   {
@@ -328,10 +546,100 @@
       "sprint"
     ],
     "subtasks": [],
+    "comments": [
+      {
+        "id": "comm-554106",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T20:45:20.666726"
+      },
+      {
+        "id": "comm-1ae6b4",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T20:59:52.066461"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-79f7b5",
+        "user": "Karthik D",
+        "action": "Updated priority to URGENT",
+        "timestamp": "2026-09-28T20:07:27.042258"
+      },
+      {
+        "id": "act-a8bd3f",
+        "user": "Karthik D",
+        "action": "Updated priority to LOW",
+        "timestamp": "2026-09-28T20:07:28.958099"
+      },
+      {
+        "id": "act-16554e",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T20:45:20.666726"
+      },
+      {
+        "id": "act-a5d46e",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T20:59:52.066461"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-21T09:15:00",
+    "updatedAt": "2026-09-28T20:59:52.066461"
+  },
+  {
+    "id": "task-106",
+    "title": "Cloud Infrastructure & IAM Security Audit",
+    "description": "Review IAM policies, audit S3 access logs, and optimize AWS security group rules.",
+    "assignedTo": "Sabarinathan V",
+    "project": "Cloud",
+    "status": "in-progress",
+    "priority": "high",
+    "dueDate": "2026-09-26",
+    "tags": [
+      "cloud",
+      "security",
+      "iam"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-106-1",
+        "text": "Audit IAM role boundaries",
+        "completed": true
+      },
+      {
+        "id": "sub-106-2",
+        "text": "Review S3 bucket encryption",
+        "completed": false
+      }
+    ],
     "comments": [],
     "activityLog": [],
     "attachments": [],
-    "createdAt": "2026-09-21T09:15:00",
-    "updatedAt": "2026-09-21T09:15:00"
+    "createdAt": "2026-09-22T10:00:00",
+    "updatedAt": "2026-09-22T10:00:00"
+  },
+  {
+    "id": "task-107",
+    "title": "Deploy automated CI/CD pipeline",
+    "description": "Configure GitHub Actions runner with containerized microservice builds.",
+    "assignedTo": "Sabarinathan V",
+    "project": "Backend",
+    "status": "to-do",
+    "priority": "urgent",
+    "dueDate": "2026-09-28",
+    "tags": [
+      "devops",
+      "cicd"
+    ],
+    "subtasks": [],
+    "comments": [],
+    "activityLog": [],
+    "attachments": [],
+    "createdAt": "2026-09-22T11:00:00",
+    "updatedAt": "2026-09-22T11:00:00"
   }
 ]

@@ -13,7 +13,8 @@ export default function TaskListView({
   tasks,
   onEditTask,
   onDeleteTask,
-  onStatusChange
+  onStatusChange,
+  role = 'manager'
 }) {
   const [sortField, setSortField] = useState('updatedAt');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -178,13 +179,15 @@ export default function TaskListView({
                         >
                           <Edit3 size={14} />
                         </button>
-                        <button
-                          className="btn-icon btn-danger-icon"
-                          onClick={() => onDeleteTask(task.id)}
-                          title="Delete Task"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {role !== 'employee' && (
+                          <button
+                            className="btn-icon btn-danger-icon"
+                            onClick={() => onDeleteTask(task.id)}
+                            title="Delete Task"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

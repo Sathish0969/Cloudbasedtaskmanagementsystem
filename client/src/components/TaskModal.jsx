@@ -8,7 +8,9 @@ import {
   Paperclip, 
   AlertCircle,
   Loader2,
-  FileText
+  FileText,
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
 import { uploadAttachment } from '../services/api';
 
@@ -21,11 +23,13 @@ export default function TaskModal({
   role = 'manager'
 }) {
   const isEditing = Boolean(taskToEdit && taskToEdit.id);
+  const isTL = role === 'teamleader';
   const isEmployee = role === 'employee';
 
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [requestedBy, setRequestedBy] = useState('Sabarinathan V (Engineering Manager)');
   const [assignedTo, setAssignedTo] = useState('Arun K');
   const [project, setProject] = useState('Web App');
   const [status, setStatus] = useState(defaultStatus);
@@ -149,12 +153,18 @@ export default function TaskModal({
       return;
     }
 
+    if (!isEditing && !isTL) {
+      setFormError('Access Denied: Only Team Leader (TL) has permission to create or assign tasks. Manager and Employee cannot create tasks.');
+      return;
+    }
+
     setIsSaving(true);
     setFormError('');
 
     const payload = {
       title: title.trim(),
       description: description.trim(),
+      requestedBy,
       assignedTo,
       project,
       status,
@@ -184,12 +194,14 @@ export default function TaskModal({
         <div className="modal-header">
           <div className="modal-title-group">
             <h2 className="modal-title">
-              {isEditing ? (isEmployee ? 'Task Progress & Details' : 'Edit Task') : 'Assign New Task'}
+              {isEditing 
+                ? (isEmployee ? 'Task Progress & Details' : 'Edit Task') 
+                : 'Team Leader Task Assignment'}
             </h2>
             <span className="modal-subtitle">
               {isEditing 
                 ? (isEmployee ? 'Review requirements, update checklist progress, and track deliverables' : (taskToEdit.title || `Task ID: ${taskToEdit.id}`))
-                : 'Configure deliverables, assignees, and deadlines'}
+                : 'Assign sprint deliverables requested by manager to team members'}
             </span>
           </div>
           <button className="btn-icon modal-close-btn" onClick={onClose} aria-label="Close modal">
@@ -199,6 +211,22 @@ export default function TaskModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="modal-form">
+          {/* TL Authorization Notice */}
+          {!isEditing && isTL && (
+            <div className="tf-tl-auth-notice">
+              <ShieldCheck size={18} />
+              <span>Team Leader Authorization: You are assigning this sprint deliverable from Manager to Employee.</span>
+            </div>
+          )}
+
+          {/* Access Restriction Warning if not TL */}
+          {!isEditing && !isTL && (
+            <div className="form-error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Lock size={16} />
+              <span>Access Denied: Only Team Leader (TL) has permission to create or assign tasks.</span>
+            </div>
+          )}
+
           {formError && (
             <div className="form-error-banner">
               <AlertCircle size={16} />
@@ -238,42 +266,63 @@ export default function TaskModal({
             />
           </div>
 
-          {/* Assignment & Project Row */}
+          {/* Manager & Assignee Row (TL Orchestration) */}
           <div className="form-row-duo">
             <div className="form-group">
-              <label htmlFor="task-assigned" className="form-label">Assigned To {isEmployee && <span className="tf-badge-readonly">(Read-only)</span>}</label>
+              <label htmlFor="task-requested-by" className="form-label">
+                Task From (Manager)
+              </label>
+              <select
+                id="task-requested-by"
+                className="form-select"
+                value={requestedBy}
+                onChange={(e) => setRequestedBy(e.target.value)}
+                disabled={!isTL && !isEditing}
+              >
+                <option value="Sabarinathan V (Engineering Manager)">Sabarinathan V (Engineering Manager)</option>
+                <option value="Alex R (Product Manager)">Alex R (Product Manager)</option>
+                <option value="Deepa M (Director of Engineering)">Deepa M (Director of Engineering)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="task-assigned" className="form-label">
+                Assign To (Team Member) {!isTL && <span className="tf-badge-readonly">(TL Only)</span>}
+              </label>
               <select
                 id="task-assigned"
                 className="form-select"
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                disabled={isEmployee}
+                disabled={!isTL}
               >
-                <option value="Arun K">Arun K</option>
-                <option value="Priya S">Priya S</option>
-                <option value="Vignesh M">Vignesh M</option>
-                <option value="Nivetha R">Nivetha R</option>
-                <option value="Karthik D">Karthik D</option>
-                <option value="Sabarinathan V">Sabarinathan V</option>
+                <option value="Sabarinathan V">Sabarinathan V (Senior Cloud Engineer)</option>
+                <option value="Arun K">Arun K (Frontend Lead)</option>
+                <option value="Priya S">Priya S (Backend Engineer)</option>
+                <option value="Vignesh M">Vignesh M (Cloud Architect)</option>
+                <option value="Nivetha R">Nivetha R (QA & UX Reviewer)</option>
+                <option value="Karthik D">Karthik D (DevOps Specialist)</option>
+                <option value="Ananya R">Ananya R (Product Designer)</option>
+                <option value="Vikram S">Vikram S (Security Analyst)</option>
               </select>
             </div>
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="task-project" className="form-label">Project {isEmployee && <span className="tf-badge-readonly">(Read-only)</span>}</label>
-              <select
-                id="task-project"
-                className="form-select"
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                disabled={isEmployee}
-              >
-                <option value="Web App">Web App</option>
-                <option value="Backend">Backend</option>
-                <option value="Cloud">Cloud</option>
-                <option value="Mobile App">Mobile App</option>
-                <option value="Documentation">Documentation</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="task-project" className="form-label">Project</label>
+            <select
+              id="task-project"
+              className="form-select"
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
+              disabled={isEmployee}
+            >
+              <option value="Web App">Web App</option>
+              <option value="Backend">Backend</option>
+              <option value="Cloud">Cloud</option>
+              <option value="Mobile App">Mobile App</option>
+              <option value="Documentation">Documentation</option>
+            </select>
           </div>
 
           {/* Controls Row: Status, Priority, Due Date */}
@@ -508,8 +557,8 @@ export default function TaskModal({
             </button>
             <button
               type="submit"
-              className="btn-primary tf-modal-btn-submit"
-              disabled={isSaving || isUploading}
+              className={`btn-primary tf-modal-btn-submit ${isTL ? 'tf-btn-teamleader' : ''}`}
+              disabled={isSaving || isUploading || (!isEditing && !isTL)}
             >
               {isSaving ? (
                 <>
@@ -518,8 +567,17 @@ export default function TaskModal({
                 </>
               ) : (
                 <>
-                  <Check size={16} />
-                  <span>{isEditing ? (isEmployee ? 'Update Progress' : 'Update Task') : 'Assign Task'}</span>
+                  {(!isEditing && !isTL) ? (
+                    <>
+                      <Lock size={16} />
+                      <span>Assignment Restricted (TL Only)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} />
+                      <span>{isEditing ? (isEmployee ? 'Update Progress' : 'Update Task') : 'Assign Task to Team'}</span>
+                    </>
+                  )}
                 </>
               )}
             </button>

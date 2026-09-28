@@ -59,7 +59,7 @@ export default function RoleSelect({ onSelectRole }) {
 
             <h2 className="tf-role-name">Manager</h2>
             <p className="tf-role-desc">
-              Plan, assign, track and manage your team's tasks.
+              Strategic overview, sprint health, and workload analytics. <em>(Task assignment delegated to TL)</em>
             </p>
 
             <button 
@@ -86,6 +86,46 @@ export default function RoleSelect({ onSelectRole }) {
             </button>
           </div>
 
+          {/* Team Leader (TL) Card */}
+          <div className="tf-role-card tf-role-teamleader" onClick={() => onSelectRole('teamleader', 'login')}>
+            <div className="tf-role-highlight-badge">Exclusive Assigner</div>
+            <div className="tf-role-avatar-circle tf-teamleader-circle">
+              <div className="tf-teamleader-svg-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="tf-role-name">Team Leader (TL)</h2>
+            <p className="tf-role-desc">
+              Authorize and assign tasks from the manager to team members. <strong>Only TL has task assignment/creation access.</strong>
+            </p>
+
+            <button 
+              className="tf-role-btn tf-btn-teamleader"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectRole('teamleader', 'login');
+              }}
+              type="button"
+            >
+              <span>Continue</span>
+              <ArrowRight size={18} />
+            </button>
+
+            <button
+              type="button"
+              className="tf-role-create-link"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectRole('teamleader', 'create-account');
+              }}
+            >
+              or Create Team Leader Account
+            </button>
+          </div>
+
           {/* Employee Card */}
           <div className="tf-role-card tf-role-employee" onClick={() => onSelectRole('employee', 'login')}>
             <div className="tf-role-avatar-circle tf-employee-circle">
@@ -98,7 +138,7 @@ export default function RoleSelect({ onSelectRole }) {
 
             <h2 className="tf-role-name">Employee</h2>
             <p className="tf-role-desc">
-              View your tasks, update progress and achieve goals.
+              View your deliverables, update status and complete subtasks. <em>(Read-only task creation)</em>
             </p>
 
             <button 

@@ -8,13 +8,18 @@ import TaskTable from './components/TaskTable';
 import TaskModal from './components/TaskModal';
 import TaskDetailDrawer from './components/TaskDetailDrawer';
 import KanbanBoard from './components/KanbanBoard';
+import CalendarView from './components/CalendarView';
+import TeamView from './components/TeamView';
 import { 
   fetchTasks, 
   fetchTaskStats, 
   createTask, 
   updateTask, 
   updateTaskStatus, 
-  deleteTask 
+  deleteTask,
+  approveTaskCompletion,
+  rejectTaskCompletion,
+  requestTaskCompletion
 } from './services/api';
 import { taskWs } from './services/websocket';
 import './App.css';
@@ -98,6 +103,39 @@ const DEFAULT_TASKS = [
     priority: "low",
     dueDate: "2026-09-25",
     tags: ["report", "sprint"],
+    subtasks: [],
+    comments: [],
+    activityLog: [],
+    attachments: []
+  },
+  {
+    id: "task-106",
+    title: "Cloud Infrastructure & IAM Security Audit",
+    description: "Review IAM policies, audit S3 access logs, and optimize AWS security group rules.",
+    assignedTo: "Sabarinathan V",
+    project: "Cloud",
+    status: "in-progress",
+    priority: "high",
+    dueDate: "2026-09-26",
+    tags: ["cloud", "security", "iam"],
+    subtasks: [
+      { id: "sub-106-1", text: "Audit IAM role boundaries", completed: true },
+      { id: "sub-106-2", text: "Review S3 bucket encryption", completed: false }
+    ],
+    comments: [],
+    activityLog: [],
+    attachments: []
+  },
+  {
+    id: "task-107",
+    title: "Deploy automated CI/CD pipeline",
+    description: "Configure GitHub Actions runner with containerized microservice builds.",
+    assignedTo: "Sabarinathan V",
+    project: "Backend",
+    status: "to-do",
+    priority: "urgent",
+    dueDate: "2026-09-28",
+    tags: ["devops", "cicd"],
     subtasks: [],
     comments: [],
     activityLog: [],
@@ -275,6 +313,26 @@ export default function App() {
       addToast('💬 Live: New comment posted', 'info');
     });
 
+    const unbindCompletionRequested = taskWs.on('TASK_COMPLETION_REQUESTED', ({ id, requestedBy, task: updated }) => {
+      if (updated) {
+        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+        setActiveDetailTask((current) => (current && current.id === id ? updated : current));
+      }
+      fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
+      if (currentRole === 'teamleader') {
+        addToast(`🔔 Completion Approval Request: ${requestedBy || 'An employee'} submitted a task for your confirmation.`, 'info');
+      }
+    });
+
+    const unbindCompletionApproved = taskWs.on('TASK_COMPLETION_APPROVED', ({ id, approvedBy, task: updated }) => {
+      if (updated) {
+        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+        setActiveDetailTask((current) => (current && current.id === id ? updated : current));
+      }
+      fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
+      addToast(`✓ Live: Task completion confirmed and approved by ${approvedBy}!`, 'success');
+    });
+
     return () => {
       unbindStatus();
       unbindCreated();
@@ -282,11 +340,13 @@ export default function App() {
       unbindStatusChanged();
       unbindDeleted();
       unbindComment();
+      unbindCompletionRequested();
+      unbindCompletionApproved();
     };
-  }, [addToast]);
+  }, [addToast, currentRole]);
 
   // -------------------------------------------------------------
-  // Keyboard Shortcuts: "N" for new task, "Escape" to close
+  // Keyboard Shortcuts: "N" for new task (Team Leader only)
   // -------------------------------------------------------------
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
@@ -298,6 +358,10 @@ export default function App() {
 
       if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
+        if (currentRole !== 'teamleader') {
+          addToast('🔒 Access Restricted: Only Team Leader (TL) has permission to create or assign tasks.', 'error');
+          return;
+        }
         setTaskToEdit(null);
         setDefaultModalStatus('to-do');
         setIsModalOpen(true);
@@ -306,7 +370,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [currentRole, addToast]);
 
   // Role Selection Handler
   const handleSelectRole = (role, mode = 'login') => {
@@ -341,9 +405,50 @@ export default function App() {
     addToast('Logged out successfully', 'info');
   };
 
+  // Status Change (Optimistic Update with TL Confirmation Workflow)
+  const handleStatusChange = async (taskId, newStatus, optionalNotes = '') => {
+    const isEmp = currentRole === 'employee';
+    const isCompleted = newStatus === 'completed';
 
-  // Status Change (Optimistic Update)
-  const handleStatusChange = async (taskId, newStatus) => {
+    // If an employee marks as completed, route to pending TL approval
+    if (isEmp && isCompleted) {
+      const now = new Date().toISOString();
+      setTasks((current) =>
+        current.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                status: 'in-review',
+                completionRequested: true,
+                completionRequestedBy: user?.name || 'Employee',
+                completionRequestedAt: now,
+                completionNotes: optionalNotes || 'Submitted for TL completion confirmation'
+              }
+            : t
+        )
+      );
+      if (activeDetailTask && activeDetailTask.id === taskId) {
+        setActiveDetailTask((prev) => ({
+          ...prev,
+          status: 'in-review',
+          completionRequested: true,
+          completionRequestedBy: user?.name || 'Employee',
+          completionRequestedAt: now,
+          completionNotes: optionalNotes || 'Submitted for TL completion confirmation'
+        }));
+      }
+
+      try {
+        await updateTaskStatus(taskId, 'completed', user?.name || 'Employee', optionalNotes);
+        fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
+        addToast('⏳ Submitted for completion! Request sent to Team Leader (TL) for confirmation.', 'info');
+      } catch (err) {
+        fetchTasks().then((res) => setTasks(res?.tasks || res || [])).catch(() => {});
+        addToast(err.message || 'Failed to submit completion request', 'error');
+      }
+      return;
+    }
+
     setTasks((current) =>
       current.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
     );
@@ -352,12 +457,85 @@ export default function App() {
     }
 
     try {
-      await updateTaskStatus(taskId, newStatus);
+      await updateTaskStatus(taskId, newStatus, user?.name || 'User');
       fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
       addToast(`Status updated to ${newStatus.replace('-', ' ')}`, 'success');
     } catch (err) {
       console.warn('Status update API notice:', err);
       addToast(`Status updated to ${newStatus.replace('-', ' ')}`, 'success');
+    }
+  };
+
+  // TL: Confirm and Approve Task Completion
+  const handleApproveCompletion = async (taskId) => {
+    if (currentRole !== 'teamleader' && currentRole !== 'manager') {
+      addToast('🔒 Access Restricted: Only Team Leader can approve task completion.', 'error');
+      return;
+    }
+
+    const now = new Date().toISOString();
+    setTasks((current) =>
+      current.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              status: 'completed',
+              completionRequested: false,
+              completionApprovedBy: user?.name || 'Team Leader',
+              completionApprovedAt: now
+            }
+          : t
+      )
+    );
+    if (activeDetailTask && activeDetailTask.id === taskId) {
+      setActiveDetailTask((prev) => ({
+        ...prev,
+        status: 'completed',
+        completionRequested: false,
+        completionApprovedBy: user?.name || 'Team Leader',
+        completionApprovedAt: now
+      }));
+    }
+
+    try {
+      await approveTaskCompletion(taskId, user?.name || 'Team Leader');
+      fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
+      addToast('✓ Task completion confirmed and approved!', 'success');
+    } catch (err) {
+      fetchTasks().then((res) => setTasks(res?.tasks || res || [])).catch(() => {});
+      addToast(err.message || 'Failed to approve completion', 'error');
+    }
+  };
+
+  // TL: Reject / Request Revisions on Task Completion
+  const handleRejectCompletion = async (taskId) => {
+    if (currentRole !== 'teamleader' && currentRole !== 'manager') {
+      addToast('🔒 Access Restricted: Only Team Leader can reject completion.', 'error');
+      return;
+    }
+
+    setTasks((current) =>
+      current.map((t) =>
+        t.id === taskId
+          ? { ...t, status: 'in-progress', completionRequested: false }
+          : t
+      )
+    );
+    if (activeDetailTask && activeDetailTask.id === taskId) {
+      setActiveDetailTask((prev) => ({
+        ...prev,
+        status: 'in-progress',
+        completionRequested: false
+      }));
+    }
+
+    try {
+      await rejectTaskCompletion(taskId, user?.name || 'Team Leader');
+      fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
+      addToast('Task returned to In Progress for revisions.', 'info');
+    } catch (err) {
+      fetchTasks().then((res) => setTasks(res?.tasks || res || [])).catch(() => {});
+      addToast(err.message || 'Failed to reject completion', 'error');
     }
   };
 
@@ -376,14 +554,13 @@ export default function App() {
         }
         addToast('Task updated successfully', 'success');
       } else {
-        const created = await createTask(taskData).catch(() => ({
-          ...taskData,
-          id: `task-${Date.now().toString().slice(-4)}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }));
+        // Enforce RBAC: Only Team Leader can create or assign tasks
+        if (currentRole !== 'teamleader') {
+          throw new Error('Access Denied: Neither Manager nor Employee has permission to create tasks. Only Team Leader (TL) is authorized.');
+        }
+        const created = await createTask(taskData, currentRole);
         setTasks((prev) => [created, ...prev]);
-        addToast('New task created', 'success');
+        addToast('New task assigned to team member', 'success');
       }
       fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
     } catch (err) {
@@ -409,6 +586,11 @@ export default function App() {
 
   // Delete Task with Full Control
   const handleDeleteTask = async (taskId) => {
+    if (currentRole === 'employee') {
+      addToast('🔒 Access Restricted: Employees do not have permission to delete tasks.', 'error');
+      return;
+    }
+
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     if (activeDetailTask && activeDetailTask.id === taskId) {
       setActiveDetailTask(null);
@@ -419,12 +601,18 @@ export default function App() {
       addToast('Task removed from workspace', 'info');
       fetchTaskStats().then((s) => s && setStats(s)).catch(() => {});
     } catch (err) {
-      addToast('Task removed from workspace', 'info');
+      // Revert/refresh on deletion error
+      fetchTasks().then((res) => setTasks(res?.tasks || res || [])).catch(() => {});
+      addToast(err?.message || 'Failed to remove task', 'error');
     }
   };
 
   // Modal Openers
   const handleOpenAssignModal = () => {
+    if (currentRole !== 'teamleader') {
+      addToast('🔒 Access Restricted: Only Team Leader (TL) has permission to create or assign tasks.', 'error');
+      return;
+    }
     setTaskToEdit(null);
     setDefaultModalStatus('to-do');
     setIsModalOpen(true);
@@ -543,6 +731,8 @@ export default function App() {
                     onOpenDetail={handleOpenDetail}
                     onDeleteTask={handleDeleteTask}
                     onStatusChange={handleStatusChange}
+                    onApproveCompletion={handleApproveCompletion}
+                    onRejectCompletion={handleRejectCompletion}
                     role={currentRole}
                     onQuickAdd={(colId) => {
                       setDefaultModalStatus(colId);
@@ -560,6 +750,8 @@ export default function App() {
                   onOpenDetail={handleOpenDetail}
                   onDeleteTask={handleDeleteTask}
                   onStatusChange={handleStatusChange}
+                  onApproveCompletion={handleApproveCompletion}
+                  onRejectCompletion={handleRejectCompletion}
                   activeFilter={selectedStatus}
                   onFilterChange={setSelectedStatus}
                   searchQuery={searchQuery}
@@ -570,35 +762,14 @@ export default function App() {
             </>
           )}
 
-          {/* Team View */}
+          {/* Team / Squads View (Team Leader exclusive management, Employee view-only) */}
           {activeNav === 'team' && (
-            <div className="tf-placeholder-view">
-              <div className="tf-view-header">
-                <h2>Team Members (8)</h2>
-                <p>Manage member allocation, roles, and sprint workloads.</p>
-              </div>
-              <div className="tf-team-grid">
-                {[
-                  { name: 'Arun K', role: 'Frontend Lead', tasks: 3, avatar: 'A' },
-                  { name: 'Priya S', role: 'Backend Engineer', tasks: 4, avatar: 'P' },
-                  { name: 'Vignesh M', role: 'Cloud Architect', tasks: 2, avatar: 'V' },
-                  { name: 'Nivetha R', role: 'QA & UX Reviewer', tasks: 2, avatar: 'N' },
-                  { name: 'Karthik D', role: 'DevOps Specialist', tasks: 3, avatar: 'K' },
-                  { name: 'Sabarinathan V', role: 'Manager / Lead', tasks: 1, avatar: 'S' },
-                  { name: 'Ananya R', role: 'Product Designer', tasks: 2, avatar: 'A' },
-                  { name: 'Vikram S', role: 'Security Analyst', tasks: 1, avatar: 'V' }
-                ].map((member, i) => (
-                  <div key={i} className="tf-team-card">
-                    <div className="tf-team-avatar">{member.avatar}</div>
-                    <div className="tf-team-info">
-                      <h4>{member.name}</h4>
-                      <span>{member.role}</span>
-                    </div>
-                    <div className="tf-team-badge">{member.tasks} active tasks</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <TeamView
+              role={currentRole}
+              user={user}
+              tasks={tasks}
+              addToast={addToast}
+            />
           )}
 
           {/* Projects View */}
@@ -631,42 +802,14 @@ export default function App() {
             </div>
           )}
 
-          {/* Calendar View */}
+          {/* Calendar View (Role-based: Employee only sees own tasks; Manager & TL see all tasks) */}
           {activeNav === 'calendar' && (
-            <div className="tf-placeholder-view">
-              <div className="tf-view-header">
-                <h2>Sprint Calendar — September 2026</h2>
-                <p>Deliverables, deadlines, and milestone reviews.</p>
-              </div>
-              <div className="tf-calendar-mock">
-                <div className="tf-cal-header-days">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-                    <div key={d} className="tf-cal-day-label">{d}</div>
-                  ))}
-                </div>
-                <div className="tf-cal-grid">
-                  {Array.from({ length: 30 }, (_, i) => {
-                    const day = i + 1;
-                    const matchingTask = tasks.find(
-                      (t) => t.dueDate && t.dueDate.endsWith(`-${day < 10 ? '0' + day : day}`)
-                    );
-                    return (
-                      <div key={day} className={`tf-cal-cell ${day === 21 ? 'tf-cal-today' : ''}`}>
-                        <span className="tf-cal-num">{day}</span>
-                        {matchingTask && (
-                          <div 
-                            className="tf-cal-task-pill" 
-                            onClick={() => handleOpenDetail(matchingTask)}
-                          >
-                            {matchingTask.title}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CalendarView
+              role={currentRole}
+              user={user}
+              tasks={tasks}
+              onOpenDetail={handleOpenDetail}
+            />
           )}
 
           {/* Employee Progress View */}
@@ -769,6 +912,8 @@ export default function App() {
         onUpdateTask={handleUpdateTaskDirect}
         onDeleteTask={handleDeleteTask}
         onStatusChange={handleStatusChange}
+        onApproveCompletion={handleApproveCompletion}
+        onRejectCompletion={handleRejectCompletion}
         currentUser={user}
         role={currentRole}
       />

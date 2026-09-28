@@ -20,6 +20,7 @@ export default function Sidebar({
   onLogout
 }) {
   const isManager = role === 'manager';
+  const isTL = role === 'teamleader';
 
   const managerNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -30,20 +31,30 @@ export default function Sidebar({
     { id: 'reports', label: 'Reports', icon: FileText },
   ];
 
+  const tlNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'tasks', label: 'Assign & Track', icon: CheckSquare },
+    { id: 'team', label: 'Team Members', icon: Users },
+    { id: 'projects', label: 'Projects', icon: Folder },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
+    { id: 'reports', label: 'Sprint Reports', icon: FileText },
+  ];
+
   const employeeNavItems = [
     { id: 'my-tasks', label: 'My Tasks', icon: Home },
+    { id: 'team', label: 'My Team', icon: Users },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'my-progress', label: 'My Progress', icon: BarChart3 },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
-  const navItems = isManager ? managerNavItems : employeeNavItems;
+  const navItems = isTL ? tlNavItems : isManager ? managerNavItems : employeeNavItems;
 
   return (
     <aside className="tf-sidebar">
       {/* Brand Header */}
       <div className="tf-sidebar-brand">
-        <div className="tf-logo-icon tf-terracotta-bg">
+        <div className={`tf-logo-icon ${isTL ? 'tf-indigo-bg' : isManager ? 'tf-terracotta-bg' : 'tf-green-bg'}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
@@ -75,8 +86,8 @@ export default function Sidebar({
 
       {/* Sidebar Footer Section */}
       <div className="tf-sidebar-footer">
-        {/* Manager has Settings button */}
-        {isManager && (
+        {/* Manager & TL have Settings button */}
+        {(isManager || isTL) && (
           <button 
             type="button" 
             className={`tf-nav-btn ${activeNav === 'settings' ? 'tf-nav-btn-active' : ''}`}
@@ -86,7 +97,6 @@ export default function Sidebar({
             <span className="tf-nav-label">Settings</span>
           </button>
         )}
-
 
         {/* Logout Button */}
         <button 
@@ -98,12 +108,16 @@ export default function Sidebar({
           <span className="tf-nav-label">Logout</span>
         </button>
 
-        {/* Employee Quote */}
-        {!isManager && (
+        {/* Quotes */}
+        {isTL ? (
+          <div className="tf-sidebar-quote" style={{ borderLeft: '3px solid var(--tf-indigo)', paddingLeft: '10px' }}>
+            <p className="tf-quote-text">"Authorize, delegate, and empower"</p>
+          </div>
+        ) : !isManager ? (
           <div className="tf-sidebar-quote">
             <p className="tf-quote-text">"Small steps lead to big results"</p>
           </div>
-        )}
+        ) : null}
       </div>
     </aside>
   );

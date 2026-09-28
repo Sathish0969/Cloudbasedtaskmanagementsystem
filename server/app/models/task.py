@@ -41,6 +41,12 @@ class TaskBase(BaseModel):
     subtasks: List[SubTask] = Field(default_factory=list)
     comments: List[Comment] = Field(default_factory=list)
     activityLog: List[ActivityItem] = Field(default_factory=list)
+    completionRequested: Optional[bool] = False
+    completionRequestedBy: Optional[str] = None
+    completionRequestedAt: Optional[str] = None
+    completionApprovedBy: Optional[str] = None
+    completionApprovedAt: Optional[str] = None
+    completionNotes: Optional[str] = None
 
 class TaskCreate(TaskBase):
     pass
@@ -57,10 +63,17 @@ class TaskUpdate(BaseModel):
     subtasks: Optional[List[SubTask]] = None
     comments: Optional[List[Comment]] = None
     activityLog: Optional[List[ActivityItem]] = None
+    completionRequested: Optional[bool] = None
+    completionRequestedBy: Optional[str] = None
+    completionRequestedAt: Optional[str] = None
+    completionApprovedBy: Optional[str] = None
+    completionApprovedAt: Optional[str] = None
+    completionNotes: Optional[str] = None
 
 class TaskStatusUpdate(BaseModel):
-    status: str
-    user: Optional[str] = "Sabarinathan V"
+    status: Optional[str] = "completed"
+    user: Optional[str] = None
+    notes: Optional[str] = None
 
 class TaskOut(TaskBase):
     id: str

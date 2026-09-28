@@ -131,6 +131,43 @@ INITIAL_DEMO_TASKS = [
         "attachments": [],
         "createdAt": "2026-09-21T09:15:00",
         "updatedAt": "2026-09-21T09:15:00"
+    },
+    {
+        "id": "task-106",
+        "title": "Cloud Infrastructure & IAM Security Audit",
+        "description": "Review IAM policies, audit S3 access logs, and optimize AWS security group rules.",
+        "assignedTo": "Sabarinathan V",
+        "project": "Cloud",
+        "status": "in-progress",
+        "priority": "high",
+        "dueDate": "2026-09-26",
+        "tags": ["cloud", "security", "iam"],
+        "subtasks": [
+            {"id": "sub-106-1", "text": "Audit IAM role boundaries", "completed": True},
+            {"id": "sub-106-2", "text": "Review S3 bucket encryption", "completed": False}
+        ],
+        "comments": [],
+        "activityLog": [],
+        "attachments": [],
+        "createdAt": "2026-09-22T10:00:00",
+        "updatedAt": "2026-09-22T10:00:00"
+    },
+    {
+        "id": "task-107",
+        "title": "Deploy automated CI/CD pipeline",
+        "description": "Configure GitHub Actions runner with containerized microservice builds.",
+        "assignedTo": "Sabarinathan V",
+        "project": "Backend",
+        "status": "to-do",
+        "priority": "urgent",
+        "dueDate": "2026-09-28",
+        "tags": ["devops", "cicd"],
+        "subtasks": [],
+        "comments": [],
+        "activityLog": [],
+        "attachments": [],
+        "createdAt": "2026-09-22T11:00:00",
+        "updatedAt": "2026-09-22T11:00:00"
     }
 ]
 

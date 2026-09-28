@@ -10,6 +10,12 @@
   --tf-green-light: #e8f5ec;
   --tf-green-soft: #f0fdf4;
 
+  --tf-indigo: #2563eb;
+  --tf-indigo-hover: #1d4ed8;
+  --tf-indigo-light: #eff6ff;
+  --tf-indigo-soft: #f0f7ff;
+  --tf-indigo-border: #bfdbfe;
+
   /* Neutrals */
   --tf-bg-page: #fafbfc;
   --tf-bg-surface: #ffffff;

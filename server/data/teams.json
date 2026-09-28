@@ -1,0 +1,87 @@
+[
+  {
+    "id": "team-01",
+    "name": "Cloud & Core Infrastructure Squad",
+    "description": "Responsible for core cloud backend microservices, database optimizations, and system reliability.",
+    "teamLeader": "Sabarinathan V",
+    "teamLeaderEmail": "sabarinathan.tl@taskflow.cloud",
+    "members": [
+      {
+        "id": "mem-101",
+        "name": "Sabarinathan V",
+        "email": "sabarinathan.emp@taskflow.cloud",
+        "role": "Senior Cloud Engineer",
+        "avatar": "S",
+        "status": "active",
+        "joinedAt": "2026-09-18"
+      },
+      {
+        "id": "mem-102",
+        "name": "Arun K",
+        "email": "arun@taskflow.cloud",
+        "role": "Frontend Lead",
+        "avatar": "A",
+        "status": "active",
+        "joinedAt": "2026-09-18"
+      },
+      {
+        "id": "mem-103",
+        "name": "Priya S",
+        "email": "priya@taskflow.cloud",
+        "role": "Backend Engineer",
+        "avatar": "P",
+        "status": "active",
+        "joinedAt": "2026-09-19"
+      },
+      {
+        "id": "mem-104",
+        "name": "Vignesh M",
+        "email": "vignesh@taskflow.cloud",
+        "role": "Cloud Architect",
+        "avatar": "V",
+        "status": "active",
+        "joinedAt": "2026-09-20"
+      }
+    ],
+    "createdAt": "2026-09-18T09:00:00",
+    "updatedAt": "2026-09-28T20:00:00"
+  },
+  {
+    "id": "team-02",
+    "name": "UX & Quality Engineering",
+    "description": "Ensures design token consistency, automated cross-browser testing, and high accessibility standards.",
+    "teamLeader": "Sabarinathan V",
+    "teamLeaderEmail": "sabarinathan.tl@taskflow.cloud",
+    "members": [
+      {
+        "id": "mem-105",
+        "name": "Nivetha R",
+        "email": "nivetha@taskflow.cloud",
+        "role": "QA & UX Reviewer",
+        "avatar": "N",
+        "status": "active",
+        "joinedAt": "2026-09-19"
+      },
+      {
+        "id": "mem-106",
+        "name": "Karthik D",
+        "email": "karthik@taskflow.cloud",
+        "role": "DevOps Specialist",
+        "avatar": "K",
+        "status": "active",
+        "joinedAt": "2026-09-20"
+      },
+      {
+        "id": "mem-107",
+        "name": "Ananya R",
+        "email": "ananya@taskflow.cloud",
+        "role": "Product Designer",
+        "avatar": "A",
+        "status": "active",
+        "joinedAt": "2026-09-21"
+      }
+    ],
+    "createdAt": "2026-09-18T09:00:00",
+    "updatedAt": "2026-09-28T20:00:00"
+  }
+]

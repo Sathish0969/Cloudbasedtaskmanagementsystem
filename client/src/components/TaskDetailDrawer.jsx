@@ -31,6 +31,8 @@ export default function TaskDetailDrawer({
   onUpdateTask,
   onDeleteTask,
   onStatusChange,
+  onApproveCompletion,
+  onRejectCompletion,
   currentUser = { name: 'Sabarinathan V' },
   role = 'manager'
 }) {
@@ -118,6 +120,9 @@ export default function TaskDetailDrawer({
   const handleSelectStatus = async (newStatus) => {
     setStatus(newStatus);
     onStatusChange(task.id, newStatus);
+    if (role === 'employee' && newStatus === 'completed') {
+      return;
+    }
     handleSave({ status: newStatus });
   };
 
@@ -268,7 +273,7 @@ export default function TaskDetailDrawer({
               <option value="to-do">To Do</option>
               <option value="in-progress">In Progress</option>
               <option value="in-review">In Review</option>
-              <option value="completed">Completed</option>
+              <option value="completed">{role === 'employee' ? 'Completed (Request TL Approval)' : 'Completed'}</option>
               <option value="overdue">Overdue</option>
               <option value="backlog">Backlog</option>
             </select>
@@ -287,15 +292,17 @@ export default function TaskDetailDrawer({
           </div>
 
           <div className="tf-drawer-header-actions">
-            {/* Direct Task Removal button */}
-            <button
-              className="tf-drawer-btn-danger"
-              onClick={() => setConfirmDelete(true)}
-              title="Delete task permanently"
-            >
-              <Trash2 size={16} />
-              <span>Delete</span>
-            </button>
+            {/* Direct Task Removal button (hidden for employee) */}
+            {role !== 'employee' && (
+              <button
+                className="tf-drawer-btn-danger"
+                onClick={() => setConfirmDelete(true)}
+                title="Delete task permanently"
+              >
+                <Trash2 size={16} />
+                <span>Delete</span>
+              </button>
+            )}
 
             <button className="tf-drawer-close-btn" onClick={onClose} aria-label="Close drawer">
               <X size={18} />
@@ -303,8 +310,61 @@ export default function TaskDetailDrawer({
           </div>
         </header>
 
+        {/* Task Completion Approval Alert Banner */}
+        {task?.completionRequested && (
+          <div className="tf-approval-banner">
+            <div className="tf-approval-banner-content">
+              <div className="tf-approval-banner-icon">
+                <AlertCircle size={22} />
+              </div>
+              <div className="tf-approval-banner-text">
+                <div className="tf-approval-banner-title">
+                  {role === 'teamleader' || role === 'manager' 
+                    ? 'Completion Approval Requested' 
+                    : 'Completion Awaiting TL Approval'}
+                </div>
+                <p className="tf-approval-banner-desc">
+                  {role === 'teamleader' || role === 'manager'
+                    ? `${task.completionRequestedBy || 'An employee'} marked this task as completed. Review the deliverables and confirm approval or request revisions.`
+                    : 'You submitted this task for completion. It is currently in review and requires approval from your Team Leader before it is marked completed.'}
+                </p>
+                {task.completionNotes && (
+                  <div className="tf-approval-notes">
+                    <strong>Note:</strong> {task.completionNotes}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {(role === 'teamleader' || role === 'manager') && (
+              <div className="tf-approval-banner-actions">
+                <button
+                  type="button"
+                  className="tf-btn-banner-approve"
+                  onClick={() => {
+                    onApproveCompletion && onApproveCompletion(task.id);
+                  }}
+                  title="Approve task completion"
+                >
+                  <Check size={15} /> Approve Completion
+                </button>
+                <button
+                  type="button"
+                  className="tf-btn-banner-reject"
+                  onClick={() => {
+                    onRejectCompletion && onRejectCompletion(task.id);
+                  }}
+                  title="Reject and send back to In Progress"
+                >
+                  <X size={15} /> Request Changes
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Delete Confirmation Alert Banner */}
-        {confirmDelete && (
+        {confirmDelete && role !== 'employee' && (
           <div className="tf-delete-confirm-banner">
             <div className="tf-confirm-text">
               <AlertCircle size={18} />
