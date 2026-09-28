@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Cloud-Based Task Manager Infrastructure: Amazon DynamoDB Table, Amazon S3 Bucket
+  with CORS for presigned uploads, and IAM roles for AWS App Runner or ECS execution.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: production
+    Description: Environment name prefix (e.g. dev, staging, production)
+
+  DynamoDBTableName:
+    Type: String
+    Default: CloudTasks
+    Description: Name of the DynamoDB table for tasks
+
+  S3BucketNamePrefix:
+    Type: String
+    Default: cloud-task-manager-attachments
+    Description: S3 bucket name prefix for secure attachments
+
+Resources:
+  # ============================================================================
+  # Amazon DynamoDB Table: CloudTasks
+  # ============================================================================
+  TasksDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${DynamoDBTableName}-${EnvironmentName}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: CloudTaskManager
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # Amazon S3 Bucket: Attachments Storage with CORS
+  # ============================================================================
+  AttachmentsS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${S3BucketNamePrefix}-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3600
+      Tags:
+        - Key: Project
+          Value: CloudTaskManager
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # IAM Policy: Least-Privilege Access for Task Manager Service
+  # ============================================================================
+  TaskManagerAppPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "CloudTaskManagerPolicy-${EnvironmentName}"
+      Description: Least privilege policy for DynamoDB and S3 presigned operations
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # DynamoDB permissions
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+              - dynamodb:Query
+              - dynamodb:DescribeTable
+            Resource: !GetAtt TasksDynamoDBTable.Arn
+
+          # S3 permissions for presigned uploads and gets
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+              - s3:AbortMultipartUpload
+            Resource: !Sub "${AttachmentsS3Bucket.Arn}/*"
+
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource: !GetAtt AttachmentsS3Bucket.Arn
+
+Outputs:
+  DynamoDBTableArn:
+    Description: DynamoDB Table ARN
+    Value: !GetAtt TasksDynamoDBTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-DynamoDBTableArn"
+
+  DynamoDBTableNameOutput:
+    Description: DynamoDB Table Name
+    Value: !Ref TasksDynamoDBTable
+    Export:
+      Name: !Sub "${AWS::StackName}-DynamoDBTableName"
+
+  S3BucketNameOutput:
+    Description: S3 Attachments Bucket Name
+    Value: !Ref AttachmentsS3Bucket
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketName"
+
+  IAMPolicyArn:
+    Description: IAM Managed Policy ARN for application execution role
+    Value: !Ref TaskManagerAppPolicy
+    Export:
+      Name: !Sub "${AWS::StackName}-IAMPolicyArn"

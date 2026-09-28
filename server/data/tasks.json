@@ -1,0 +1,337 @@
+[
+  {
+    "id": "task-cfbde9",
+    "title": "gd",
+    "description": "",
+    "assignedTo": "Arun K",
+    "project": "Web App",
+    "status": "completed",
+    "priority": "medium",
+    "dueDate": "",
+    "tags": [],
+    "subtasks": [],
+    "comments": [
+      {
+        "id": "comm-3c90ff",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-24T13:13:44.271148"
+      },
+      {
+        "id": "comm-bf8200",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T15:05:45.404083"
+      },
+      {
+        "id": "comm-7d25fd",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T15:38:03.442297"
+      },
+      {
+        "id": "comm-2cdd4e",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-28T15:38:21.258693"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-992985",
+        "user": "Arun K",
+        "action": "Created task in workspace",
+        "timestamp": "2026-09-23T23:16:41.796385"
+      },
+      {
+        "id": "act-ca919b",
+        "user": "Sabarinathan V",
+        "action": "Changed status to Completed",
+        "timestamp": "2026-09-23T23:17:17.239038"
+      },
+      {
+        "id": "act-4b46f2",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-24T13:13:44.271148"
+      },
+      {
+        "id": "act-fc6c7f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T15:05:45.404083"
+      },
+      {
+        "id": "act-28de79",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T15:38:03.442297"
+      },
+      {
+        "id": "act-13814c",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-28T15:38:21.258693"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-23T23:16:41.796385",
+    "updatedAt": "2026-09-28T15:38:21.258693",
+    "user": "Sabarinathan V"
+  },
+  {
+    "id": "task-101",
+    "title": "Design login page",
+    "description": "Create responsive role-based authentication interface for Manager and Employee workflows with seamless AWS IAM integration.",
+    "assignedTo": "Arun K",
+    "project": "Web App",
+    "status": "in-progress",
+    "priority": "high",
+    "dueDate": "2026-09-21",
+    "tags": [
+      "ui",
+      "design",
+      "security"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-101-1",
+        "text": "Draft wireframes for Manager & Employee portals",
+        "completed": true
+      },
+      {
+        "id": "sub-101-2",
+        "text": "Implement OAuth2 / JWT login screen with dark mode tokens",
+        "completed": true
+      },
+      {
+        "id": "sub-101-3",
+        "text": "Conduct cross-browser accessibility audit",
+        "completed": false
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1",
+        "author": "Arun K",
+        "text": "Completed the initial wireframes and submitted for design review.",
+        "createdAt": "2026-09-20T10:30:00"
+      },
+      {
+        "id": "comm-2",
+        "author": "Sabarinathan V",
+        "text": "Looks great! Ensure responsive breakpoints are tested on mobile.",
+        "createdAt": "2026-09-20T14:15:00"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-1",
+        "user": "Sabarinathan V",
+        "action": "Created task and assigned to Arun K",
+        "timestamp": "2026-09-18T09:00:00"
+      },
+      {
+        "id": "act-2",
+        "user": "Arun K",
+        "action": "Changed status to In-Progress",
+        "timestamp": "2026-09-19T11:20:00"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-18T09:00:00",
+    "updatedAt": "2026-09-20T14:15:00"
+  },
+  {
+    "id": "task-102",
+    "title": "Write API documentation",
+    "description": "Document all FastAPI endpoints with OpenAPI Swagger specs and interactive code snippets.",
+    "assignedTo": "Priya S",
+    "project": "Backend",
+    "status": "completed",
+    "priority": "medium",
+    "dueDate": "2026-09-22",
+    "tags": [
+      "api",
+      "docs",
+      "fastapi"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-102-1",
+        "text": "Generate Swagger 3.0 schema specs",
+        "completed": true
+      },
+      {
+        "id": "sub-102-2",
+        "text": "Add request and response curl examples",
+        "completed": true
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-3",
+        "author": "Priya S",
+        "text": "OpenAPI /docs endpoint fully validated and deployed.",
+        "createdAt": "2026-09-22T16:00:00"
+      },
+      {
+        "id": "comm-da748f",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-23T01:42:45.430235"
+      },
+      {
+        "id": "comm-931461",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-23T01:45:35.616632"
+      },
+      {
+        "id": "comm-cb2289",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-23T21:56:37.985253"
+      },
+      {
+        "id": "comm-541942",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-23T22:13:47.081055"
+      },
+      {
+        "id": "comm-b1c061",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-23T23:00:20.458030"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-3",
+        "user": "Priya S",
+        "action": "Marked task as Completed",
+        "timestamp": "2026-09-22T16:00:00"
+      },
+      {
+        "id": "act-533314",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-23T01:42:45.430235"
+      },
+      {
+        "id": "act-9e497a",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-23T01:45:35.616632"
+      },
+      {
+        "id": "act-f25137",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-23T21:56:37.985253"
+      },
+      {
+        "id": "act-ef0355",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-23T22:13:47.081055"
+      },
+      {
+        "id": "act-88af8d",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-23T23:00:20.458030"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-19T10:00:00",
+    "updatedAt": "2026-09-23T23:00:20.458030"
+  },
+  {
+    "id": "task-103",
+    "title": "Fix database issues",
+    "description": "Optimize DynamoDB scan latency and secondary index query throughput under load.",
+    "assignedTo": "Vignesh M",
+    "project": "Cloud",
+    "status": "in-progress",
+    "priority": "urgent",
+    "dueDate": "2026-09-23",
+    "tags": [
+      "aws",
+      "dynamodb",
+      "performance"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-103-1",
+        "text": "Analyze query access patterns and hot keys",
+        "completed": true
+      },
+      {
+        "id": "sub-103-2",
+        "text": "Configure Global Secondary Index (GSI) for status queries",
+        "completed": false
+      }
+    ],
+    "comments": [],
+    "activityLog": [
+      {
+        "id": "act-4",
+        "user": "Vignesh M",
+        "action": "Updated priority to Urgent",
+        "timestamp": "2026-09-21T08:45:00"
+      }
+    ],
+    "attachments": [],
+    "createdAt": "2026-09-20T08:00:00",
+    "updatedAt": "2026-09-21T08:45:00"
+  },
+  {
+    "id": "task-104",
+    "title": "UI review and feedback",
+    "description": "Stakeholder testing across desktop and mobile screens to finalize design sign-off.",
+    "assignedTo": "Nivetha R",
+    "project": "Mobile App",
+    "status": "overdue",
+    "priority": "high",
+    "dueDate": "2026-09-24",
+    "tags": [
+      "review",
+      "feedback",
+      "qa"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-104-1",
+        "text": "Verify touch targets on iOS Safari and Android Chrome",
+        "completed": false
+      }
+    ],
+    "comments": [],
+    "activityLog": [],
+    "attachments": [],
+    "createdAt": "2026-09-19T14:00:00",
+    "updatedAt": "2026-09-20T17:30:00"
+  },
+  {
+    "id": "task-105",
+    "title": "Prepare project report",
+    "description": "Compile quarterly sprint metrics, velocity charts, and infrastructure cost breakdown.",
+    "assignedTo": "Karthik D",
+    "project": "Documentation",
+    "status": "to-do",
+    "priority": "low",
+    "dueDate": "2026-09-25",
+    "tags": [
+      "report",
+      "sprint"
+    ],
+    "subtasks": [],
+    "comments": [],
+    "activityLog": [],
+    "attachments": [],
+    "createdAt": "2026-09-21T09:15:00",
+    "updatedAt": "2026-09-21T09:15:00"
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "name": "cloud-based-task-manager",
+  "version": "1.0.0",
+  "description": "Full-stack Cloud Based Task Manager with AWS DynamoDB/S3 integration and React 19 Vite UI",
+  "scripts": {
+    "install:client": "npm --prefix client install",
+    "dev:server": "python server/run.py",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "start": "python server/run.py",
+    "test:server": "pytest server/tests -v",
+    "test": "pytest server/tests -v"
+  },
+  "keywords": [
+    "aws",
+    "dynamodb",
+    "s3",
+    "task-manager",
+    "fastapi",
+    "python",
+    "react",
+    "vite",
+    "kanban"
+  ],
+  "author": "",
+  "license": "MIT"
+}
