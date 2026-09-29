@@ -259,23 +259,23 @@ When the backend server is running, explore the interactive API documentation:
 If you and your team members/friends are collaborating on this project, follow this standardized Git workflow:
 
 ### 1. Adding Collaborators on GitHub
-The repository owner (`sathish0969`) must grant write access to team members:
+The repository owner (`sathish0969`) can grant write access to team members:
 1. Go to the repository **[Settings > Collaborators](https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem/settings/access)**.
 2. Click **Add people**.
-3. Enter your friend's GitHub username or email address and send the invite.
-4. Your friend must check their email or open `https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem/invitations` to accept the invite.
+3. Enter your team member's GitHub username or email address and send the invite.
+4. Team members can accept the invite directly via email or GitHub notifications.
 
 ---
 
-### 2. How Friends Clone and Set Up the Project
+### 2. How to Clone and Set Up the Project
 ```bash
 # Clone the repository
 git clone https://github.com/Sathish0969/Cloudbasedtaskmanagementsystem.git
 cd Cloudbasedtaskmanagementsystem
 
 # Configure personal Git credentials
-git config user.name "Your Name"
-git config user.email "your.email@example.com"
+git config user.name "Gowtham G"
+git config user.email "gowthamgopalakrishnan0207@gmail.com"
 ```
 
 ---
@@ -299,13 +299,13 @@ git status
 git add .
 
 # 5. Commit with a meaningful message
-git commit -m "feat: added new task filter component"
+git commit -m "feat: added new feature"
 
 # 6. Push your branch to GitHub
 git push origin feature/task-update
 ```
 
-*(You can also merge and push directly to `main` if working on a shared branch):*
+*(Or push directly to `main`):*
 ```bash
 git add .
 git commit -m "update: project progress"
@@ -316,10 +316,11 @@ git push origin main
 
 ## 👥 Project Team & Contributors
 
-| Member | Role | GitHub |
-|---|---|---|
-| **Sathish S** | Project Lead & Cloud Architect | [@Sathish0969](https://github.com/Sathish0969) |
-| **Sabarinathan V** | Full-Stack Developer | [@sabarinathanfwff](https://github.com/sabarinathanfwff) |
+| Member | Role | GitHub | Email |
+|---|---|---|---|
+| **Sathish S** | Project Lead & Cloud Architect | [@Sathish0969](https://github.com/Sathish0969) | |
+| **Sabarinathan V** | Full-Stack Developer | [@sabarinathanfwff](https://github.com/sabarinathanfwff) | |
+| **Gowtham G** | Cloud & DevOps Engineer | [@gowthamgopalakrishnan](https://github.com/gowthamgopalakrishnan) | [gowthamgopalakrishnan0207@gmail.com](mailto:gowthamgopalakrishnan0207@gmail.com) |
 
 ---
 

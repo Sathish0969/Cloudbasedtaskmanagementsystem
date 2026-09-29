@@ -22,6 +22,108 @@
         "author": "Antigravity Reviewer",
         "text": "Real-time task synchronization test comment.",
         "createdAt": "2026-09-28T21:18:57.399546"
+      },
+      {
+        "id": "comm-fc1b66",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T21:56:17.912786"
+      },
+      {
+        "id": "comm-582c40",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T21:57:22.120366"
+      },
+      {
+        "id": "comm-8e66b4",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T21:57:42.856122"
+      },
+      {
+        "id": "comm-5af5c6",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:02:09.901994"
+      },
+      {
+        "id": "comm-bb3d9c",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:03:54.262192"
+      },
+      {
+        "id": "comm-a55e11",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:05:24.338022"
+      },
+      {
+        "id": "comm-5ad345",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:08:19.610902"
+      },
+      {
+        "id": "comm-852dba",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:09:39.905933"
+      },
+      {
+        "id": "comm-b35cb4",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:36:28.114424"
+      },
+      {
+        "id": "comm-969f4b",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-29T22:39:39.125109"
+      },
+      {
+        "id": "comm-9b08f2",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:33:29.215212"
+      },
+      {
+        "id": "comm-979f14",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:37:40.988912"
+      },
+      {
+        "id": "comm-ce55e8",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:41:47.881163"
+      },
+      {
+        "id": "comm-5efcc1",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:50:57.070394"
+      },
+      {
+        "id": "comm-93d616",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:52:51.743501"
+      },
+      {
+        "id": "comm-d20a67",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:53:08.441723"
+      },
+      {
+        "id": "comm-04e4ca",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T00:59:45.396409"
       }
     ],
     "activityLog": [
@@ -60,11 +162,113 @@
         "user": "Antigravity Reviewer",
         "action": "Added comment: \"Real-time task synchronization...\"",
         "timestamp": "2026-09-28T21:18:57.399546"
+      },
+      {
+        "id": "act-086465",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T21:56:17.912786"
+      },
+      {
+        "id": "act-792167",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T21:57:22.120366"
+      },
+      {
+        "id": "act-ac64a9",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T21:57:42.856122"
+      },
+      {
+        "id": "act-f03ea9",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:02:09.901994"
+      },
+      {
+        "id": "act-9f7a2f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:03:54.262192"
+      },
+      {
+        "id": "act-a19993",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:05:24.338022"
+      },
+      {
+        "id": "act-15ae7f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:08:19.610902"
+      },
+      {
+        "id": "act-dc5c94",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:09:39.905933"
+      },
+      {
+        "id": "act-f1034a",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:36:28.114424"
+      },
+      {
+        "id": "act-b8e114",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-29T22:39:39.125109"
+      },
+      {
+        "id": "act-505a6f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:33:29.215212"
+      },
+      {
+        "id": "act-f69c0e",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:37:40.988912"
+      },
+      {
+        "id": "act-bf32e9",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:41:47.881163"
+      },
+      {
+        "id": "act-85c543",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:50:57.070394"
+      },
+      {
+        "id": "act-49bc0f",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:52:51.743501"
+      },
+      {
+        "id": "act-c57b01",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:53:08.441723"
+      },
+      {
+        "id": "act-5f92a9",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T00:59:45.396409"
       }
     ],
     "attachments": [],
     "createdAt": "2026-09-28T21:18:17.720536",
-    "updatedAt": "2026-09-28T21:18:57.399546",
+    "updatedAt": "2026-09-30T00:59:45.396409",
     "completionRequested": false,
     "completionRequestedBy": "Dev Employee",
     "completionRequestedAt": "2026-09-28T21:18:17.725691",
@@ -79,7 +283,7 @@
     "description": "Requires employee completion and TL approval",
     "assignedTo": "Dev Employee",
     "project": "Web App",
-    "status": "in-review",
+    "status": "completed",
     "priority": "high",
     "dueDate": "",
     "tags": [],
@@ -110,16 +314,24 @@
         "user": "Antigravity Reviewer",
         "action": "Added comment: \"Real-time task synchronization...\"",
         "timestamp": "2026-09-28T21:17:37.170307"
+      },
+      {
+        "id": "act-331ddf",
+        "user": "Sabarinathan V (TL)",
+        "action": "Changed status to Completed",
+        "timestamp": "2026-09-30T01:05:43.468915"
       }
     ],
     "attachments": [],
     "createdAt": "2026-09-28T21:17:37.000650",
-    "updatedAt": "2026-09-28T21:17:37.170307",
-    "completionRequested": true,
+    "updatedAt": "2026-09-30T01:05:43.468915",
+    "completionRequested": false,
     "completionRequestedBy": "Sabarinathan V",
     "completionRequestedAt": "2026-09-28T21:17:37.005653",
     "completionNotes": "Completed sprint work, please verify",
-    "user": "Sabarinathan V"
+    "user": "Sabarinathan V (TL)",
+    "completionApprovedBy": "Sabarinathan V (TL)",
+    "completionApprovedAt": "2026-09-30T01:05:43.466883"
   },
   {
     "id": "task-196d9e",
@@ -530,7 +742,7 @@
     "activityLog": [],
     "attachments": [],
     "createdAt": "2026-09-19T14:00:00",
-    "updatedAt": "2026-09-20T17:30:00"
+    "updatedAt": "2026-09-30T01:06:03.375489"
   },
   {
     "id": "task-105",
@@ -616,11 +828,37 @@
         "completed": false
       }
     ],
-    "comments": [],
-    "activityLog": [],
+    "comments": [
+      {
+        "id": "comm-cfb50b",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T01:09:31.355603"
+      },
+      {
+        "id": "comm-8c5ca0",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T01:23:43.619421"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-b8343c",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T01:09:31.355603"
+      },
+      {
+        "id": "act-9a20d4",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T01:23:43.619421"
+      }
+    ],
     "attachments": [],
     "createdAt": "2026-09-22T10:00:00",
-    "updatedAt": "2026-09-22T10:00:00"
+    "updatedAt": "2026-09-30T01:23:43.619421"
   },
   {
     "id": "task-107",

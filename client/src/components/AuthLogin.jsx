@@ -1,39 +1,117 @@
-import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck, AlertCircle, Users, CheckCircle2, Camera, Phone, MapPin, Briefcase, Sparkles } from 'lucide-react';
+import { fetchAuthorizedMembers, verifyTeamMemberEmail } from '../services/api';
 
-export default function AuthLogin({ role, initialMode = 'login', onBack, onLoginSuccess }) {
+const DEFAULT_FALLBACK_MEMBERS = [
+  { name: 'Sabarinathan V', email: 'sabarinathan.emp@taskflow.cloud', role: 'Senior Cloud Engineer', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'S' },
+  { name: 'Arun K', email: 'arun@taskflow.cloud', role: 'Frontend Lead', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'A' },
+  { name: 'Priya S', email: 'priya@taskflow.cloud', role: 'Backend Engineer', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'P' },
+  { name: 'Vignesh M', email: 'vignesh@taskflow.cloud', role: 'Cloud Architect', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'V' },
+  { name: 'Nivetha R', email: 'nivetha@taskflow.cloud', role: 'QA & UX Reviewer', teamName: 'UX & Quality Engineering', avatar: 'N' },
+  { name: 'Karthik D', email: 'karthik@taskflow.cloud', role: 'DevOps Specialist', teamName: 'UX & Quality Engineering', avatar: 'K' },
+  { name: 'Ananya R', email: 'ananya@taskflow.cloud', role: 'Product Designer', teamName: 'UX & Quality Engineering', avatar: 'A' },
+  { name: 'Vikram S', email: 'vikram@taskflow.cloud', role: 'Security Analyst', teamName: 'UX & Quality Engineering', avatar: 'V' },
+  { name: 'Gowtham G', email: 'gowthamgopalakrishnan0207@gmail.com', role: 'Cloud & DevOps Engineer', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'G' }
+];
+
+export default function AuthLogin({ role, initialMode = 'login', onBack, onSelectRole, onLoginSuccess }) {
   const isManager = role === 'manager';
   const isTL = role === 'teamleader';
   const isEmployee = role === 'employee';
 
   const roleDisplayName = isTL ? 'Team Leader (TL)' : isManager ? 'Manager' : 'Employee';
   
-  // Login or register
+  // Login or register mode
   const [authMode, setAuthMode] = useState(initialMode); // 'login' | 'create-account'
   const isRegister = authMode === 'create-account';
 
-  const [fullName, setFullName] = useState(isRegister ? '' : 'Sabarinathan V');
-  const [email, setEmail] = useState(
-    isTL 
-      ? 'sabarinathan.tl@taskflow.cloud' 
-      : isManager 
-      ? 'sabarinathan.mgr@taskflow.cloud' 
-      : 'sabarinathan.emp@taskflow.cloud'
-  );
-  const [password, setPassword] = useState('••••••••••••');
-  const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
+  const defaultEmail = isTL 
+    ? 'sabarinathan.tl@taskflow.cloud' 
+    : isManager 
+    ? 'sabarinathan.mgr@taskflow.cloud' 
+    : 'sabarinathan.emp@taskflow.cloud';
+
+  const [fullName, setFullName] = useState(initialMode === 'create-account' ? '' : 'Sabarinathan V');
+  const [email, setEmail] = useState(initialMode === 'create-account' ? '' : defaultEmail);
+  const [password, setPassword] = useState(initialMode === 'create-account' ? '' : '••••••••••••');
+  const [confirmPassword, setConfirmPassword] = useState(initialMode === 'create-account' ? '' : '••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [department, setDepartment] = useState('');
+  const [location, setLocation] = useState('');
+  const [picture, setPicture] = useState('');
+  const [bio, setBio] = useState('');
+  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const PRESET_AVATARS = [
+    { label: 'Cloud Pro', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80' },
+    { label: 'Tech Lead', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80' },
+    { label: 'Engineer', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80' },
+    { label: 'Developer', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80' },
+    { label: 'Architect', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80' }
+  ];
+
+  // Stored Team Members fetched from TL rosters
+  const [authorizedMembers, setAuthorizedMembers] = useState(DEFAULT_FALLBACK_MEMBERS);
+  const [isLoadingRoster, setIsLoadingRoster] = useState(false);
+
+  // Fetch active authorized team members registered by TL
+  useEffect(() => {
+    let mounted = true;
+    const loadRoster = async () => {
+      setIsLoadingRoster(true);
+      try {
+        const members = await fetchAuthorizedMembers();
+        if (mounted && Array.isArray(members) && members.length > 0) {
+          setAuthorizedMembers(members);
+        }
+      } catch (err) {
+        console.warn('Using fallback member roster:', err);
+      } finally {
+        if (mounted) setIsLoadingRoster(false);
+      }
+    };
+
+    if (isEmployee) {
+      loadRoster();
+    }
+    return () => { mounted = false; };
+  }, [isEmployee]);
+
+  // Sync state when role or initialMode changes
+  useEffect(() => {
+    setAuthMode(initialMode);
+    setFormError('');
+    if (initialMode === 'create-account') {
+      setFullName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+    } else {
+      setFullName(isEmployee ? 'Sabarinathan V' : isTL ? 'Sabarinathan V (TL)' : 'Sabarinathan V (Manager)');
+      setEmail(defaultEmail);
+      setPassword('••••••••••••');
+      setConfirmPassword('••••••••••••');
+    }
+  }, [initialMode, role, defaultEmail, isEmployee, isTL]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
 
+    const trimmedEmail = (email || '').trim().toLowerCase();
+    const trimmedName = (fullName || '').trim();
+
     if (isRegister) {
-      if (!fullName.trim()) {
+      if (!trimmedName) {
         setFormError('Please enter your full name.');
+        return;
+      }
+      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+        setFormError('Please enter a valid email address.');
         return;
       }
       if (password !== confirmPassword) {
@@ -44,19 +122,87 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
         setFormError('Password must be at least 6 characters.');
         return;
       }
+    } else {
+      if (!trimmedEmail || !trimmedEmail.includes('@')) {
+        setFormError('Please enter a valid email address.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
+
+    // Rule: ONLY team members whose employee email IDs are stored by the TL can log in as Employee!
+    if (isEmployee) {
+      try {
+        let verifiedMember = null;
+
+        // 1. Try server verification endpoint
+        try {
+          const verifyRes = await verifyTeamMemberEmail(trimmedEmail);
+          if (verifyRes && verifyRes.authorized && verifyRes.member) {
+            verifiedMember = verifyRes.member;
+          }
+        } catch {
+          // Server offline / fallback check
+        }
+
+        // 2. Fallback check against loaded or cached roster
+        if (!verifiedMember) {
+          const listToCheck = authorizedMembers.length > 0 ? authorizedMembers : DEFAULT_FALLBACK_MEMBERS;
+          verifiedMember = listToCheck.find(
+            (m) => (m.email || '').trim().toLowerCase() === trimmedEmail
+          );
+        }
+
+        if (!verifiedMember) {
+          setIsSubmitting(false);
+          setFormError(
+            `🚫 Access Denied: Only team members added by the Team Leader can login. The email "${email}" is not registered in any team squad roster. Please contact your Team Leader to add your employee email ID.`
+          );
+          return;
+        }
+
+        // Successfully verified as authorized team member!
+        setIsSubmitting(false);
+        onLoginSuccess({
+          role: 'employee',
+          name: verifiedMember.name || trimmedName || 'Team Member',
+          email: verifiedMember.email || trimmedEmail,
+          title: verifiedMember.role || 'Senior Cloud Engineer',
+          avatar: verifiedMember.avatar || (verifiedMember.name ? verifiedMember.name[0].toUpperCase() : 'E'),
+          picture: picture || verifiedMember.picture || '',
+          phone: phone || verifiedMember.phone || '',
+          department: department || verifiedMember.department || '',
+          location: location || verifiedMember.location || '',
+          bio: bio || verifiedMember.bio || '',
+          teamName: verifiedMember.teamName || 'Assigned Squad',
+          teamId: verifiedMember.teamId
+        });
+        return;
+      } catch (err) {
+        setIsSubmitting(false);
+        setFormError(err.message || 'Verification error during login');
+        return;
+      }
+    }
+
+    // Manager / Team Leader standard authentication
     setTimeout(() => {
       setIsSubmitting(false);
       onLoginSuccess({
         role,
-        name: fullName.trim() || 'Sabarinathan V',
-        email,
-        title: isTL ? 'Team Leader / Technical Lead' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer'
+        name: trimmedName || (isTL ? 'Sabarinathan V (TL)' : isManager ? 'Sabarinathan V (Manager)' : 'Sabarinathan V'),
+        email: trimmedEmail || defaultEmail,
+        title: isTL ? 'Team Leader / Technical Lead' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer',
+        picture: picture || '',
+        phone: phone || '',
+        department: department || (isManager ? 'Engineering Operations' : isTL ? 'Sprint Architecture' : 'Cloud Engineering'),
+        location: location || 'San Francisco, CA / Remote',
+        bio: bio || ''
       });
     }, 400);
   };
+
 
   return (
     <div className={`tf-login-page tf-theme-${role}`}>
@@ -74,9 +220,9 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
           <span className="tf-brand-slogan">Plan • Track • Achieve</span>
         </div>
 
-        <button className="tf-back-link" onClick={onBack} type="button">
+        <button className="tf-back-pill-btn" onClick={onBack} type="button" title="Back to role selection">
           <ArrowLeft size={16} />
-          <span>Back to Role Selection</span>
+          <span>← Back to Role Selection</span>
         </button>
       </header>
 
@@ -106,7 +252,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
           </div>
 
           <div className="tf-login-card">
-            {/* Mode Switcher Tabs */}
+            {/* Mode Switcher Tabs for Individual Role */}
             <div className="tf-auth-tabs">
               <button
                 type="button"
@@ -114,6 +260,8 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                 onClick={() => {
                   setAuthMode('login');
                   setFormError('');
+                  setEmail(defaultEmail);
+                  setPassword('••••••••••••');
                 }}
               >
                 Log In
@@ -124,19 +272,21 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                 onClick={() => {
                   setAuthMode('create-account');
                   setFormError('');
-                  if (fullName === 'Sabarinathan V') setFullName('');
-                  if (password === '••••••••••••') {
-                    setPassword('');
-                    setConfirmPassword('');
-                  }
+                  setFullName('');
+                  setEmail('');
+                  setPassword('');
+                  setConfirmPassword('');
                 }}
               >
                 Create Account
               </button>
             </div>
 
+
+
             {formError && (
-              <div className="tf-form-error-banner">
+              <div className="tf-form-error-banner" role="alert">
+                <AlertCircle size={18} className="tf-error-icon" />
                 <span>{formError}</span>
               </div>
             )}
@@ -152,7 +302,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                       id="register-name"
                       type="text"
                       className="tf-input"
-                      placeholder="e.g., Sabarinathan V"
+                      placeholder="e.g., Arun K"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
@@ -164,20 +314,22 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
 
               {/* Email Field */}
               <div className="tf-form-group">
-                <label htmlFor="login-email" className="tf-label">Email address</label>
+                <label htmlFor="login-email" className="tf-label">Employee Email Address</label>
                 <div className="tf-input-wrapper">
                   <Mail className="tf-input-icon" size={18} />
                   <input
                     id="login-email"
                     type="email"
                     className="tf-input"
-                    placeholder="Enter your email"
+                    placeholder="e.g., arun@taskflow.cloud"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
               </div>
+
+
 
               {/* Password Field */}
               <div className="tf-form-group">
@@ -221,6 +373,132 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                       required
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Everyone Section: Optional Profile Picture & Contact Details */}
+              {isRegister && (
+                <div className="tf-auth-optional-box">
+                  <div 
+                    className="tf-auth-optional-header" 
+                    onClick={() => setShowOptionalDetails(!showOptionalDetails)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="tf-auth-opt-title-wrap">
+                      <Camera size={15} className="tf-text-indigo" />
+                      <span className="tf-auth-opt-title">
+                        Profile Picture & Contact Info <em className="tf-opt-subtag">(Optional)</em>
+                      </span>
+                    </div>
+                    <button type="button" className="tf-auth-opt-toggle-btn">
+                      {showOptionalDetails ? 'Hide' : '+ Add If You Want'}
+                    </button>
+                  </div>
+
+                  {showOptionalDetails && (
+                    <div className="tf-auth-optional-body">
+                      {/* Profile Picture / Preset Picker */}
+                      <div className="tf-form-group">
+                        <label className="tf-label">Profile Picture (URL or Preset)</label>
+                        <div className="tf-input-wrapper">
+                          <Camera className="tf-input-icon" size={18} />
+                          <input
+                            type="url"
+                            className="tf-input"
+                            placeholder="https://images.unsplash.com/... or choose below"
+                            value={picture}
+                            onChange={(e) => setPicture(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Presets */}
+                        <div className="tf-auth-presets-row">
+                          {PRESET_AVATARS.map((p, idx) => (
+                            <img
+                              key={idx}
+                              src={p.url}
+                              alt={p.label}
+                              className={`tf-auth-preset-thumb ${picture === p.url ? 'active' : ''}`}
+                              title={p.label}
+                              onClick={() => setPicture(p.url)}
+                            />
+                          ))}
+                          {picture && (
+                            <button
+                              type="button"
+                              className="tf-auth-clear-thumb-btn"
+                              onClick={() => setPicture('')}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Phone & Department */}
+                      <div className="tf-form-row-2">
+                        <div className="tf-form-group">
+                          <label className="tf-label">Contact Phone</label>
+                          <div className="tf-input-wrapper">
+                            <Phone className="tf-input-icon" size={18} />
+                            <input
+                              type="tel"
+                              className="tf-input"
+                              placeholder="+1 (555) 012-3456"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="tf-form-group">
+                          <label className="tf-label">Department</label>
+                          <div className="tf-input-wrapper">
+                            <Briefcase className="tf-input-icon" size={18} />
+                            <input
+                              type="text"
+                              className="tf-input"
+                              placeholder="e.g. Cloud Squad"
+                              value={department}
+                              onChange={(e) => setDepartment(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Location & Bio */}
+                      <div className="tf-form-row-2">
+                        <div className="tf-form-group">
+                          <label className="tf-label">Office / Remote Location</label>
+                          <div className="tf-input-wrapper">
+                            <MapPin className="tf-input-icon" size={18} />
+                            <input
+                              type="text"
+                              className="tf-input"
+                              placeholder="e.g. Bangalore, IN"
+                              value={location}
+                              onChange={(e) => setLocation(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="tf-form-group">
+                          <label className="tf-label">Short Bio / Specialty</label>
+                          <div className="tf-input-wrapper">
+                            <Sparkles className="tf-input-icon" size={18} />
+                            <input
+                              type="text"
+                              className="tf-input"
+                              placeholder="e.g. Full-stack & DevOps"
+                              value={bio}
+                              onChange={(e) => setBio(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -272,6 +550,8 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                       onClick={() => {
                         setAuthMode('login');
                         setFormError('');
+                        setEmail(defaultEmail);
+                        setPassword('••••••••••••');
                       }}
                     >
                       Log in here
@@ -286,17 +566,29 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onLogin
                       onClick={() => {
                         setAuthMode('create-account');
                         setFormError('');
-                        if (fullName === 'Sabarinathan V') setFullName('');
-                        if (password === '••••••••••••') {
-                          setPassword('');
-                          setConfirmPassword('');
-                        }
+                        setFullName('');
+                        setEmail('');
+                        setPassword('');
+                        setConfirmPassword('');
                       }}
                     >
-                      Create an account
+                      Create {roleDisplayName} account
                     </button>
                   </p>
                 )}
+              </div>
+
+              {/* Direct button to return to role selection menu */}
+              <div className="tf-login-menu-back-row">
+                <button
+                  type="button"
+                  className="tf-btn-back-menu"
+                  onClick={onBack}
+                  title="Return to Role Selection"
+                >
+                  <ArrowLeft size={16} />
+                  <span>← Back to Role Selection</span>
+                </button>
               </div>
             </form>
           </div>

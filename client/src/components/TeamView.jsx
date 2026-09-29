@@ -14,16 +14,32 @@ import {
   Briefcase,
   Mail,
   Calendar,
-  Sparkles
+  Sparkles,
+  Phone,
+  MapPin,
+  Camera,
+  UserCheck,
+  User,
+  Info
 } from 'lucide-react';
 import { 
   fetchTeams, 
   createTeam, 
   updateTeam, 
   addTeamMember, 
+  updateTeamMember,
   removeTeamMember, 
   deleteTeam 
 } from '../services/api';
+
+const PRESET_AVATARS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80'
+];
 
 // Candidate employees who can be assigned to teams by the Team Leader
 const AVAILABLE_CANDIDATES = [
@@ -62,6 +78,19 @@ export default function TeamView({
   // TL Member Adding State
   const [addingMemberTeamId, setAddingMemberTeamId] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(AVAILABLE_CANDIDATES[0].name);
+  const [memberAddMode, setMemberAddMode] = useState('directory'); // 'directory' | 'custom'
+  const [customMemberName, setCustomMemberName] = useState('');
+  const [customMemberEmail, setCustomMemberEmail] = useState('');
+  const [customMemberRole, setCustomMemberRole] = useState('Software Engineer');
+  const [customMemberPhone, setCustomMemberPhone] = useState('');
+  const [customMemberDept, setCustomMemberDept] = useState('');
+  const [customMemberLocation, setCustomMemberLocation] = useState('');
+  const [customMemberPicture, setCustomMemberPicture] = useState('');
+  const [customMemberBio, setCustomMemberBio] = useState('');
+
+  // Member Profile & Contact Details Edit State
+  const [editingMember, setEditingMember] = useState(null); // { id, name, email, role, avatar, picture, phone, department, location, bio, teamId }
+  const [savingMemberProfile, setSavingMemberProfile] = useState(false);
 
   // TL Kickout / Delete Confirmation
   const [kickoutTarget, setKickoutTarget] = useState(null); // { teamId, memberName, memberId }
@@ -180,27 +209,87 @@ export default function TeamView({
     }
   };
 
-  // TL: Add Member to Team
+  // TL: Add Member to Team (Support both custom email & directory)
   const handleAddMemberSubmit = async (teamId) => {
     if (!isTL) {
       addToast('🔒 Access Restricted: Only Team Leader can add members.', 'error');
       return;
     }
 
-    const candidateObj = AVAILABLE_CANDIDATES.find((c) => c.name === selectedCandidate);
-    if (!candidateObj) return;
-
-    try {
-      const updated = await addTeamMember(teamId, {
+    let memberPayload = null;
+    if (memberAddMode === 'custom') {
+      if (!customMemberName.trim()) {
+        addToast('Please enter the employee full name.', 'error');
+        return;
+      }
+      if (!customMemberEmail.trim() || !customMemberEmail.includes('@')) {
+        addToast('Please enter a valid employee email ID.', 'error');
+        return;
+      }
+      memberPayload = {
+        name: customMemberName.trim(),
+        email: customMemberEmail.trim().toLowerCase(),
+        role: customMemberRole.trim() || 'Software Engineer',
+        phone: customMemberPhone.trim() || null,
+        department: customMemberDept.trim() || null,
+        location: customMemberLocation.trim() || null,
+        picture: customMemberPicture.trim() || null,
+        bio: customMemberBio.trim() || null
+      };
+    } else {
+      const candidateObj = AVAILABLE_CANDIDATES.find((c) => c.name === selectedCandidate);
+      if (!candidateObj) return;
+      memberPayload = {
         name: candidateObj.name,
         email: candidateObj.email,
         role: candidateObj.role
-      });
+      };
+    }
+
+    try {
+      const updated = await addTeamMember(teamId, memberPayload);
       setTeams((prev) => prev.map((t) => (t.id === teamId ? updated : t)));
       setAddingMemberTeamId(null);
-      addToast(`Added ${candidateObj.name} to the team!`, 'success');
+      setCustomMemberName('');
+      setCustomMemberEmail('');
+      setCustomMemberRole('Software Engineer');
+      setCustomMemberPhone('');
+      setCustomMemberDept('');
+      setCustomMemberLocation('');
+      setCustomMemberPicture('');
+      setCustomMemberBio('');
+      addToast(`Added ${memberPayload.name} (${memberPayload.email}) to squad! Login authorized.`, 'success');
     } catch (err) {
       addToast(err.message || 'Failed to add member', 'error');
+    }
+  };
+
+  // Save Member Profile (Picture & Contact Details)
+  const handleSaveMemberProfile = async (e) => {
+    e.preventDefault();
+    if (!editingMember) return;
+    setSavingMemberProfile(true);
+    try {
+      const updates = {
+        name: editingMember.name,
+        email: editingMember.email,
+        role: editingMember.role,
+        picture: editingMember.picture || null,
+        phone: editingMember.phone || null,
+        department: editingMember.department || null,
+        location: editingMember.location || null,
+        bio: editingMember.bio || null,
+        avatar: editingMember.avatar || (editingMember.name ? editingMember.name[0].toUpperCase() : 'U')
+      };
+
+      const updatedTeam = await updateTeamMember(editingMember.teamId, editingMember.id || editingMember.name, updates);
+      setTeams((prev) => prev.map((t) => (t.id === editingMember.teamId ? updatedTeam : t)));
+      addToast(`Updated profile & contact details for ${editingMember.name}!`, 'success');
+      setEditingMember(null);
+    } catch (err) {
+      addToast(err.message || 'Failed to update member profile', 'error');
+    } finally {
+      setSavingMemberProfile(false);
     }
   };
 
@@ -268,23 +357,23 @@ export default function TeamView({
       <div className="tf-team-role-banner">
         {isTL ? (
           <div className="tf-banner-tl">
-            <ShieldCheck size={16} />
+            <ShieldCheck size={18} />
             <span>
-              <strong>Team Leader Authority:</strong> You have exclusive access to name teams, assign members, add new teammates, or kick out members.
+              <strong>Team Leader Authentication & Squad Authority:</strong> You store team member employee email IDs below. Only employees registered in your squads are authorized to log in and check sprint tasks.
             </span>
           </div>
         ) : isEmployee ? (
           <div className="tf-banner-emp">
-            <Lock size={16} />
+            <ShieldCheck size={18} />
             <span>
-              <strong>View-Only Team Member Access:</strong> You can view your team name and fellow teammates. Team name and member roster can only be modified by the Team Leader (TL).
+              <strong>Verified Team Member Access:</strong> You are logged in with your employee email authorized by the Team Leader. You can view your squad and check deliverables.
             </span>
           </div>
         ) : (
           <div className="tf-banner-mgr">
-            <Users size={16} />
+            <Users size={18} />
             <span>
-              <strong>Management Overview:</strong> Viewing all active squads. Team creation, member recruitment, and roster edits are orchestrated exclusively by Team Leaders.
+              <strong>Management Overview:</strong> Viewing all active squads. Team rosters and employee login authorizations are managed exclusively by Team Leaders.
             </span>
           </div>
         )}
@@ -536,29 +625,143 @@ export default function TeamView({
               {/* TL-Only: Inline Add Member Form */}
               {isAddingToThisTeam && isTL && (
                 <div className="tf-inline-add-member-card">
-                  <h5>Add Member to {team.name}</h5>
-                  {availableToAdd.length === 0 ? (
-                    <p className="tf-text-muted">All available employees are already in this team.</p>
-                  ) : (
-                    <div className="tf-add-member-form">
-                      <select
-                        className="tf-form-select"
-                        value={selectedCandidate}
-                        onChange={(e) => setSelectedCandidate(e.target.value)}
+                  <div className="tf-inline-add-header">
+                    <h5>Add Team Member to {team.name}</h5>
+                    <div className="tf-member-mode-toggle">
+                      <button
+                        type="button"
+                        className={`tf-mode-toggle-btn ${memberAddMode === 'directory' ? 'tf-mode-toggle-active' : ''}`}
+                        onClick={() => setMemberAddMode('directory')}
                       >
-                        {availableToAdd.map((cand) => (
-                          <option key={cand.name} value={cand.name}>
-                            {cand.name} — {cand.role}
-                          </option>
-                        ))}
-                      </select>
+                        Directory Candidates
+                      </button>
+                      <button
+                        type="button"
+                        className={`tf-mode-toggle-btn ${memberAddMode === 'custom' ? 'tf-mode-toggle-active' : ''}`}
+                        onClick={() => setMemberAddMode('custom')}
+                      >
+                        + Custom Employee Email
+                      </button>
+                    </div>
+                  </div>
+
+                  {memberAddMode === 'directory' ? (
+                    availableToAdd.length === 0 ? (
+                      <p className="tf-text-muted">All available directory employees are already in this team. Use "Custom Employee Email" to add a new employee.</p>
+                    ) : (
+                      <div className="tf-add-member-form">
+                        <div className="tf-field-group">
+                          <label className="tf-label">Select Employee Candidate</label>
+                          <select
+                            className="tf-form-select"
+                            value={selectedCandidate}
+                            onChange={(e) => setSelectedCandidate(e.target.value)}
+                          >
+                            {availableToAdd.map((cand) => (
+                              <option key={cand.name} value={cand.name}>
+                                {cand.name} ({cand.email}) — {cand.role}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="tf-add-actions">
+                          <button
+                            type="button"
+                            className="tf-btn-teamleader tf-btn-sm"
+                            onClick={() => handleAddMemberSubmit(team.id)}
+                          >
+                            Authorize & Add to Squad
+                          </button>
+                          <button
+                            type="button"
+                            className="tf-btn-cancel tf-btn-sm"
+                            onClick={() => setAddingMemberTeamId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    /* Custom Employee Email Form */
+                    <div className="tf-custom-member-form">
+                      <div className="tf-form-row-2col">
+                        <div className="tf-field-group">
+                          <label className="tf-label">Employee Full Name *</label>
+                          <input
+                            type="text"
+                            className="tf-input"
+                            placeholder="e.g., Rajesh Kumar"
+                            value={customMemberName}
+                            onChange={(e) => setCustomMemberName(e.target.value)}
+                          />
+                        </div>
+                        <div className="tf-field-group">
+                          <label className="tf-label">Employee Email ID (For Login) *</label>
+                          <input
+                            type="email"
+                            className="tf-input"
+                            placeholder="e.g., rajesh.k@taskflow.cloud"
+                            value={customMemberEmail}
+                            onChange={(e) => setCustomMemberEmail(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="tf-field-group">
+                        <label className="tf-label">Designation / Role</label>
+                        <input
+                          type="text"
+                          className="tf-input"
+                          placeholder="e.g., Full Stack Engineer"
+                          value={customMemberRole}
+                          onChange={(e) => setCustomMemberRole(e.target.value)}
+                        />
+                      </div>
+                      
+                      {/* Optional Contact Details & Picture on Member Creation */}
+                      <div className="tf-form-row-2col">
+                        <div className="tf-field-group">
+                          <label className="tf-label">Phone Number (Optional)</label>
+                          <input
+                            type="tel"
+                            className="tf-input"
+                            placeholder="+1 (555) 019-2834"
+                            value={customMemberPhone}
+                            onChange={(e) => setCustomMemberPhone(e.target.value)}
+                          />
+                        </div>
+                        <div className="tf-field-group">
+                          <label className="tf-label">Department (Optional)</label>
+                          <input
+                            type="text"
+                            className="tf-input"
+                            placeholder="e.g., Core Platform"
+                            value={customMemberDept}
+                            onChange={(e) => setCustomMemberDept(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="tf-field-group">
+                        <label className="tf-label">Profile Picture URL (Optional)</label>
+                        <input
+                          type="url"
+                          className="tf-input"
+                          placeholder="https://example.com/avatar.jpg"
+                          value={customMemberPicture}
+                          onChange={(e) => setCustomMemberPicture(e.target.value)}
+                        />
+                      </div>
+                      <p className="tf-hint-auth">
+                        🛡️ Storing this email ID will immediately authorize the employee to log in and check sprint tasks.
+                      </p>
                       <div className="tf-add-actions">
                         <button
                           type="button"
                           className="tf-btn-teamleader tf-btn-sm"
                           onClick={() => handleAddMemberSubmit(team.id)}
                         >
-                          Confirm Add
+                          Save & Grant Login Access
                         </button>
                         <button
                           type="button"
@@ -578,7 +781,7 @@ export default function TeamView({
                 {(!team.members || team.members.length === 0) ? (
                   <div className="tf-empty-roster">
                     <p>No members in this team yet.</p>
-                    {isTL && <span className="tf-hint">Use "Add Member" above to assign employees.</span>}
+                    {isTL && <span className="tf-hint">Use "Add Member" above to store employee email IDs.</span>}
                   </div>
                 ) : (
                   team.members.map((member) => {
@@ -589,7 +792,15 @@ export default function TeamView({
                       <div key={member.id || member.name} className="tf-member-row">
                         <div className="tf-member-avatar-wrap">
                           <div className="tf-member-avatar">
-                            {member.avatar || member.name[0]}
+                            {member.picture ? (
+                              <img 
+                                src={member.picture} 
+                                alt={member.name} 
+                                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                              />
+                            ) : (
+                              <span>{member.avatar || member.name[0]}</span>
+                            )}
                           </div>
                         </div>
 
@@ -597,8 +808,43 @@ export default function TeamView({
                           <div className="tf-member-name-row">
                             <span className="tf-member-name">{member.name}</span>
                             {isSelf && <span className="tf-badge-you">You</span>}
+                            <span className="tf-auth-login-badge" title="Employee email authorized for task login">
+                              <ShieldCheck size={11} />
+                              <span>Login Authorized</span>
+                            </span>
                           </div>
-                          <span className="tf-member-role">{member.role}</span>
+                          <div className="tf-member-meta-row">
+                            <span className="tf-member-role">{member.role}</span>
+                            {member.email && (
+                              <span className="tf-member-email">
+                                <Mail size={12} />
+                                {member.email}
+                              </span>
+                            )}
+                            {member.phone && (
+                              <span className="tf-member-email" title="Phone">
+                                <Phone size={12} />
+                                {member.phone}
+                              </span>
+                            )}
+                            {member.department && (
+                              <span className="tf-member-email" title="Department">
+                                <Briefcase size={12} />
+                                {member.department}
+                              </span>
+                            )}
+                            {member.location && (
+                              <span className="tf-member-email" title="Office Location">
+                                <MapPin size={12} />
+                                {member.location}
+                              </span>
+                            )}
+                          </div>
+                          {member.bio && (
+                            <p className="tf-member-bio-text" style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#64748b', fontStyle: 'italic' }}>
+                              "{member.bio}"
+                            </p>
+                          )}
                         </div>
 
                         <div className="tf-member-stats">
@@ -607,18 +853,31 @@ export default function TeamView({
                           </span>
                         </div>
 
-                        {/* Kick Out / Remove Button (STRICTLY TL ONLY) */}
-                        {isTL && (
+                        {/* Member Action Controls */}
+                        <div className="tf-member-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <button
                             type="button"
-                            className="tf-btn-kickout"
-                            onClick={() => setKickoutTarget({ teamId: team.id, memberName: member.name, memberId: member.id })}
-                            title={`Kick out ${member.name} from team`}
+                            className="tf-btn-action-icon"
+                            onClick={() => setEditingMember({ ...member, teamId: team.id })}
+                            title={`Edit ${member.name}'s profile picture and contact details`}
                           >
-                            <UserMinus size={14} />
-                            <span>Kick out</span>
+                            <Edit3 size={14} />
+                            <span style={{ fontSize: '0.78rem', marginLeft: '4px' }}>Edit</span>
                           </button>
-                        )}
+
+                          {/* Kick Out / Remove Button (STRICTLY TL ONLY) */}
+                          {isTL && (
+                            <button
+                              type="button"
+                              className="tf-btn-kickout"
+                              onClick={() => setKickoutTarget({ teamId: team.id, memberName: member.name, memberId: member.id })}
+                              title={`Remove ${member.name} from squad & revoke login access`}
+                            >
+                              <UserMinus size={14} />
+                              <span>Remove</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -628,6 +887,192 @@ export default function TeamView({
           );
         })}
       </div>
+
+      {/* Modal: Edit Member Profile & Contact Details */}
+      {editingMember && (
+        <div className="tf-modal-backdrop" onClick={() => setEditingMember(null)}>
+          <div className="tf-modal-card tf-profile-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="tf-modal-header">
+              <div>
+                <h3>Edit Member Profile & Contact Details</h3>
+                <p>Update picture and contact information for <strong>{editingMember.name}</strong></p>
+              </div>
+              <button 
+                type="button" 
+                className="tf-modal-close-btn"
+                onClick={() => setEditingMember(null)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMemberProfile} className="tf-profile-form">
+              {/* Picture Preview and Selection */}
+              <div className="tf-profile-pic-section">
+                <div className="tf-profile-pic-preview-wrap">
+                  {editingMember.picture ? (
+                    <img src={editingMember.picture} alt="Preview" className="tf-profile-pic-preview" />
+                  ) : (
+                    <div className="tf-profile-pic-placeholder">
+                      {editingMember.name ? editingMember.name[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                  <label className="tf-upload-btn-overlay" title="Upload new photo">
+                    <Camera size={16} />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            addToast('Profile picture must be under 2MB', 'error');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setEditingMember(prev => ({ ...prev, picture: ev.target.result }));
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                </div>
+
+                <div className="tf-profile-pic-inputs">
+                  <label className="tf-label">Profile Picture URL</label>
+                  <input
+                    type="url"
+                    className="tf-form-input"
+                    placeholder="https://example.com/avatar.jpg"
+                    value={editingMember.picture || ''}
+                    onChange={(e) => setEditingMember(prev => ({ ...prev, picture: e.target.value }))}
+                  />
+
+                  <div className="tf-preset-avatars-row">
+                    <span className="tf-presets-label">Preset avatars:</span>
+                    <div className="tf-preset-list">
+                      {PRESET_AVATARS.map((url, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`tf-preset-btn ${editingMember.picture === url ? 'selected' : ''}`}
+                          onClick={() => setEditingMember(prev => ({ ...prev, picture: url }))}
+                        >
+                          <img src={url} alt={`Preset ${idx + 1}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="tf-form-divider"></div>
+
+              {/* Name & Role Row */}
+              <div className="tf-form-row-2col">
+                <div className="tf-form-group">
+                  <label className="tf-label">Full Name *</label>
+                  <input
+                    type="text"
+                    className="tf-form-input"
+                    value={editingMember.name || ''}
+                    onChange={(e) => setEditingMember(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="tf-form-group">
+                  <label className="tf-label">Designation / Role</label>
+                  <input
+                    type="text"
+                    className="tf-form-input"
+                    value={editingMember.role || ''}
+                    onChange={(e) => setEditingMember(prev => ({ ...prev, role: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Phone & Department */}
+              <div className="tf-form-row-2col">
+                <div className="tf-form-group">
+                  <label className="tf-label">
+                    <Phone size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                    Contact Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    className="tf-form-input"
+                    placeholder="+1 (555) 019-2834"
+                    value={editingMember.phone || ''}
+                    onChange={(e) => setEditingMember(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div className="tf-form-group">
+                  <label className="tf-label">
+                    <Briefcase size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                    Department / Squad Focus
+                  </label>
+                  <input
+                    type="text"
+                    className="tf-form-input"
+                    placeholder="e.g. Cloud & Core Infrastructure"
+                    value={editingMember.department || ''}
+                    onChange={(e) => setEditingMember(prev => ({ ...prev, department: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="tf-form-group">
+                <label className="tf-label">
+                  <MapPin size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                  Work Location
+                </label>
+                <input
+                  type="text"
+                  className="tf-form-input"
+                  placeholder="e.g. San Francisco, CA / Hybrid Remote"
+                  value={editingMember.location || ''}
+                  onChange={(e) => setEditingMember(prev => ({ ...prev, location: e.target.value }))}
+                />
+              </div>
+
+              {/* Bio */}
+              <div className="tf-form-group">
+                <label className="tf-label">Bio / Profile Summary</label>
+                <textarea
+                  rows={3}
+                  className="tf-form-textarea"
+                  placeholder="Short bio or technical focus..."
+                  value={editingMember.bio || ''}
+                  onChange={(e) => setEditingMember(prev => ({ ...prev, bio: e.target.value }))}
+                />
+              </div>
+
+              <div className="tf-modal-footer">
+                <button
+                  type="button"
+                  className="tf-btn-secondary"
+                  onClick={() => setEditingMember(null)}
+                  disabled={savingMemberProfile}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="tf-btn-primary"
+                  disabled={savingMemberProfile}
+                >
+                  <Check size={16} />
+                  <span>{savingMemberProfile ? 'Saving...' : 'Save Member Profile'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

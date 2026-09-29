@@ -22,7 +22,12 @@
         "role": "Frontend Lead",
         "avatar": "A",
         "status": "active",
-        "joinedAt": "2026-09-18"
+        "joinedAt": "2026-09-18",
+        "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 019-2834",
+        "department": "Frontend Engineering",
+        "location": "San Francisco, CA",
+        "bio": "Specialized in micro-frontends and accessible design systems."
       },
       {
         "id": "mem-103",
@@ -41,10 +46,33 @@
         "avatar": "V",
         "status": "active",
         "joinedAt": "2026-09-20"
+      },
+      {
+        "id": "mem-b7a5e8",
+        "name": "Nivetha R",
+        "email": "nivetha@taskflow.cloud",
+        "role": "QA & UX Reviewer",
+        "avatar": "N",
+        "status": "active",
+        "joinedAt": "2026-09-30"
+      },
+      {
+        "id": "mem-108",
+        "name": "Gowtham G",
+        "email": "gowthamgopalakrishnan0207@gmail.com",
+        "role": "Cloud & DevOps Engineer",
+        "avatar": "G",
+        "picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 018-7744",
+        "department": "Cloud & Core Infrastructure",
+        "location": "Bangalore / Remote",
+        "bio": "Cloud & DevOps Engineer specializing in AWS cloud infrastructure, CI/CD pipelines, and microservice orchestration.",
+        "status": "active",
+        "joinedAt": "2026-09-30"
       }
     ],
     "createdAt": "2026-09-18T09:00:00",
-    "updatedAt": "2026-09-28T20:00:00"
+    "updatedAt": "2026-09-30T00:28:50.861673"
   },
   {
     "id": "team-02",

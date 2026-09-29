@@ -18,6 +18,7 @@ import {
 
 export default function TaskTable({
   role,
+  user,
   tasks = [],
   onEditTask,
   onOpenDetail,
@@ -33,7 +34,8 @@ export default function TaskTable({
 }) {
   const isManager = role === 'manager';
   const isTL = role === 'teamleader';
-  const showAssigned = isTL || isManager;
+  const isEmployee = role === 'employee';
+  const showAssigned = true;
   const [openActionId, setOpenActionId] = useState(null);
   const actionMenuRef = useRef(null);
 
@@ -47,6 +49,24 @@ export default function TaskTable({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const getAssigneePicture = (assignedName) => {
+    if (!assignedName) return null;
+    const clean = assignedName.toLowerCase().trim();
+    if (user?.name && user.name.toLowerCase().trim() === clean && user.picture) {
+      return user.picture;
+    }
+    const KNOWN_PICTURES = {
+      'arun k': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&q=80',
+      'priya s': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=128&q=80',
+      'vignesh m': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=128&q=80',
+      'nivetha r': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=128&q=80',
+      'karthik d': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=128&q=80',
+      'ananya r': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=128&q=80',
+      'sabarinathan v': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=128&q=80'
+    };
+    return KNOWN_PICTURES[clean] || null;
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'Sep 24, 2026';
@@ -223,12 +243,34 @@ export default function TaskTable({
                       </div>
                     </td>
 
-                    {/* Assigned To (Manager & TL) */}
+                    {/* Assigned To */}
                     {showAssigned && (
                       <td className="tf-td-assigned">
-                        <span className="tf-assignee-name">
-                          {task.assignedTo || 'Arun K'}
-                        </span>
+                        <div className="tf-assignee-cell-wrap">
+                          {(() => {
+                            const pic = task.assignedPicture || getAssigneePicture(task.assignedTo);
+                            const initial = (task.assignedTo || 'U')[0].toUpperCase();
+                            return pic ? (
+                              <img
+                                src={pic}
+                                alt={task.assignedTo || 'Assignee'}
+                                className="tf-assignee-avatar-img"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                title={`Assignee: ${task.assignedTo}`}
+                              />
+                            ) : (
+                              <div className="tf-assignee-avatar-pill" title={`Assignee: ${task.assignedTo}`}>
+                                {initial}
+                              </div>
+                            );
+                          })()}
+                          <span className="tf-assignee-name">
+                            {task.assignedTo || 'Unassigned'}
+                          </span>
+                          {isEmployee && (task.assignedTo || '').toLowerCase().trim() === (user?.name || '').toLowerCase().trim() && (
+                            <span className="tf-badge-assigned-you">You</span>
+                          )}
+                        </div>
                       </td>
                     )}
 

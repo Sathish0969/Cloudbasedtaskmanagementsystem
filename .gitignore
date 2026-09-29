@@ -50,3 +50,5 @@ dist/
 *.swo
 .DS_Store
 Thumbs.db
+.kilo/
+Cloudbasedtaskmanagementsystem/

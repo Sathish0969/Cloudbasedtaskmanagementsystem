@@ -84,9 +84,19 @@ export default function TaskCard({
     >
       {/* Top Header: Priority & Action Menu */}
       <div className="task-card-header">
-        <span className={`badge badge-${priority}`}>
-          {priority}
-        </span>
+        <div className="task-card-header-left">
+          <span className={`badge badge-${priority}`}>
+            {priority}
+          </span>
+          {task.assignedTo && (
+            <span className="task-card-assignee-chip" title={`Assigned to: ${task.assignedTo}`}>
+              <span className="task-card-avatar-bubble">
+                {(task.assignedTo || 'U')[0].toUpperCase()}
+              </span>
+              <span className="task-card-assignee-name">{task.assignedTo.split(' ')[0]}</span>
+            </span>
+          )}
+        </div>
 
         <div className="task-card-actions">
           <button

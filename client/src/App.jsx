@@ -10,6 +10,8 @@ import TaskDetailDrawer from './components/TaskDetailDrawer';
 import KanbanBoard from './components/KanbanBoard';
 import CalendarView from './components/CalendarView';
 import TeamView from './components/TeamView';
+import QueriesView from './components/QueriesView';
+import ProfileView from './components/ProfileView';
 import { 
   fetchTasks, 
   fetchTaskStats, 
@@ -333,6 +335,18 @@ export default function App() {
       addToast(`✓ Live: Task completion confirmed and approved by ${approvedBy}!`, 'success');
     });
 
+    const unbindQueryCreated = taskWs.on('QUERY_CREATED', (newQ) => {
+      if (currentRole === 'teamleader') {
+        addToast(`📩 Live Query: ${newQ.senderName} sent a query to Team Leader!`, 'info');
+      }
+    });
+
+    const unbindQueryUpdated = taskWs.on('QUERY_UPDATED', (updatedQ) => {
+      if (currentRole === 'employee' && user?.email && (updatedQ.senderEmail || '').toLowerCase() === user.email.toLowerCase()) {
+        addToast(`💬 Live Query: Team Leader responded to "${updatedQ.subject}"!`, 'success');
+      }
+    });
+
     return () => {
       unbindStatus();
       unbindCreated();
@@ -342,8 +356,10 @@ export default function App() {
       unbindComment();
       unbindCompletionRequested();
       unbindCompletionApproved();
+      unbindQueryCreated();
+      unbindQueryUpdated();
     };
-  }, [addToast, currentRole]);
+  }, [addToast, currentRole, user?.email]);
 
   // -------------------------------------------------------------
   // Keyboard Shortcuts: "N" for new task (Team Leader only)
@@ -382,7 +398,15 @@ export default function App() {
 
   // Back to Role Select
   const handleBackToRoleSelect = () => {
+    localStorage.setItem('tf_screen', 'role-select');
     setCurrentScreen('role-select');
+  };
+
+  // Switch Role Handler (direct return to 3-option main menu)
+  const handleSwitchRole = () => {
+    localStorage.setItem('tf_screen', 'role-select');
+    setCurrentScreen('role-select');
+    addToast('Returned to 3-Role Main Menu', 'info');
   };
 
   // Login Success Handler
@@ -401,6 +425,7 @@ export default function App() {
 
   // Logout Handler
   const handleLogout = () => {
+    localStorage.setItem('tf_screen', 'role-select');
     setCurrentScreen('role-select');
     addToast('Logged out successfully', 'info');
   };
@@ -671,6 +696,7 @@ export default function App() {
         role={currentRole}
         initialMode={authInitialMode}
         onBack={handleBackToRoleSelect}
+        onSelectRole={handleSelectRole}
         onLoginSuccess={handleLoginSuccess}
       />
     );
@@ -685,6 +711,7 @@ export default function App() {
         user={user}
         activeNav={activeNav}
         onSelectNav={setActiveNav}
+        onSwitchRole={handleSwitchRole}
         onLogout={handleLogout}
       />
 
@@ -697,7 +724,17 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onOpenAssignModal={handleOpenAssignModal}
+          onOpenQueries={() => setActiveNav('queries')}
+          onSwitchRole={handleSwitchRole}
           onLogout={handleLogout}
+          onUpdateUser={(updated) => {
+            setUser((prev) => {
+              const next = { ...prev, ...updated };
+              localStorage.setItem('tf_user', JSON.stringify(next));
+              return next;
+            });
+          }}
+          addToast={addToast}
           wsStatus={wsStatus}
         />
 
@@ -745,6 +782,7 @@ export default function App() {
                 /* Primary Tasks Table */
                 <TaskTable
                   role={currentRole}
+                  user={user}
                   tasks={filteredTasks}
                   onEditTask={handleOpenEditModal}
                   onOpenDetail={handleOpenDetail}
@@ -768,6 +806,34 @@ export default function App() {
               role={currentRole}
               user={user}
               tasks={tasks}
+              addToast={addToast}
+            />
+          )}
+
+          {/* Queries View (Team Member to Team Leader & 5 FAQs) */}
+          {activeNav === 'queries' && (
+            <QueriesView
+              role={currentRole}
+              user={user}
+              tasks={tasks}
+              addToast={addToast}
+              onOpenTaskDetail={handleOpenDetail}
+            />
+          )}
+
+          {/* Profile View: Dedicated Profile Picture & Contact Details Management */}
+          {activeNav === 'profile' && (
+            <ProfileView
+              role={currentRole}
+              user={user}
+              tasks={tasks}
+              onUpdateUser={(updated) => {
+                setUser((prev) => {
+                  const next = { ...prev, ...updated };
+                  localStorage.setItem('tf_user', JSON.stringify(next));
+                  return next;
+                });
+              }}
               addToast={addToast}
             />
           )}

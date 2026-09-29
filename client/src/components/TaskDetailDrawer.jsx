@@ -20,9 +20,50 @@ import {
   ExternalLink,
   ChevronRight,
   Send,
-  Loader2
+  Loader2,
+  Phone,
+  MapPin
 } from 'lucide-react';
 import { uploadAttachment, addComment } from '../services/api';
+
+const KNOWN_MEMBERS_MAP = {
+  'arun k': {
+    picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 019-2834',
+    department: 'Frontend Engineering',
+    location: 'San Francisco, CA'
+  },
+  'priya s': {
+    picture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 018-9922',
+    department: 'Cloud Core Squad',
+    location: 'New York, NY'
+  },
+  'vignesh m': {
+    picture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 012-3344',
+    department: 'Infrastructure',
+    location: 'Austin, TX'
+  },
+  'nivetha r': {
+    picture: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 014-7711',
+    department: 'QA & UX Engineering',
+    location: 'Seattle, WA'
+  },
+  'karthik d': {
+    picture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 015-8833',
+    department: 'DevOps & CI/CD',
+    location: 'Chicago, IL'
+  },
+  'sabarinathan v': {
+    picture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=128&q=80',
+    phone: '+1 (555) 010-4499',
+    department: 'Cloud Architecture & Infrastructure',
+    location: 'San Francisco, CA (HQ)'
+  }
+};
 
 export default function TaskDetailDrawer({
   task,
@@ -464,21 +505,55 @@ export default function TaskDetailDrawer({
                     <User size={14} />
                     <span>Assignee</span>
                   </div>
-                  <select
-                    className="tf-meta-select"
-                    value={assignedTo}
-                    onChange={(e) => {
-                      setAssignedTo(e.target.value);
-                      handleSave({ assignedTo: e.target.value });
-                    }}
-                  >
-                    <option value="Arun K">Arun K</option>
-                    <option value="Priya S">Priya S</option>
-                    <option value="Vignesh M">Vignesh M</option>
-                    <option value="Nivetha R">Nivetha R</option>
-                    <option value="Karthik D">Karthik D</option>
-                    <option value="Sabarinathan V">Sabarinathan V</option>
-                  </select>
+                  {(() => {
+                    const cleanName = (assignedTo || '').toLowerCase().trim();
+                    const details = KNOWN_MEMBERS_MAP[cleanName] || (currentUser?.name?.toLowerCase().trim() === cleanName ? currentUser : null);
+                    const pic = details?.picture;
+                    const initial = (assignedTo || 'U')[0].toUpperCase();
+
+                    return (
+                      <div className="tf-drawer-assignee-container">
+                        <div className="tf-drawer-assignee-row">
+                          <div className="tf-drawer-assignee-avatar" title={`Assignee: ${assignedTo}`}>
+                            {pic ? (
+                              <img src={pic} alt={assignedTo} />
+                            ) : (
+                              <span>{initial}</span>
+                            )}
+                          </div>
+                          <select
+                            className="tf-meta-select"
+                            value={assignedTo}
+                            onChange={(e) => {
+                              setAssignedTo(e.target.value);
+                              handleSave({ assignedTo: e.target.value });
+                            }}
+                          >
+                            <option value="Arun K">Arun K (Frontend)</option>
+                            <option value="Priya S">Priya S (Backend)</option>
+                            <option value="Vignesh M">Vignesh M (Cloud)</option>
+                            <option value="Nivetha R">Nivetha R (QA)</option>
+                            <option value="Karthik D">Karthik D (DevOps)</option>
+                            <option value="Sabarinathan V">Sabarinathan V (Cloud Lead)</option>
+                          </select>
+                        </div>
+                        {details && (details.phone || details.location) && (
+                          <div className="tf-drawer-assignee-contact-strip">
+                            {details.phone && (
+                              <span className="tf-contact-micro-pill" title="Contact Phone">
+                                <Phone size={11} /> {details.phone}
+                              </span>
+                            )}
+                            {details.location && (
+                              <span className="tf-contact-micro-pill" title="Location">
+                                <MapPin size={11} /> {details.location}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="tf-drawer-meta-item">

@@ -280,6 +280,107 @@ def test_task_completion_approval_workflow():
     # Clean up
     client.delete(f"/api/tasks/{task_id}", headers={"X-User-Role": "teamleader"})
 
+def test_team_member_verification_and_authorized_roster():
+    # 1. Fetch authorized team members
+    res_auth = client.get("/api/teams/members/authorized")
+    assert res_auth.status_code == 200
+    members = res_auth.json()
+    assert isinstance(members, list)
+    assert len(members) > 0
+    # Arun K should be in the default authorized members
+    arun_member = next((m for m in members if m["email"] == "arun@taskflow.cloud"), None)
+    assert arun_member is not None
+    assert arun_member["name"] == "Arun K"
+
+    # 2. Verify authorized employee email
+    res_verify_valid = client.post("/api/teams/verify-member", json={"email": "arun@taskflow.cloud"})
+    assert res_verify_valid.status_code == 200
+    data_valid = res_verify_valid.json()
+    assert data_valid["authorized"] is True
+    assert data_valid["member"]["name"] == "Arun K"
+    assert data_valid["member"]["email"] == "arun@taskflow.cloud"
+
+    # 3. Verify unauthorized/unknown email
+    res_verify_invalid = client.post("/api/teams/verify-member", json={"email": "random.unauthorized.person@unknown.com"})
+    assert res_verify_invalid.status_code == 200
+    data_invalid = res_verify_invalid.json()
+    assert data_invalid["authorized"] is False
+    assert data_invalid["member"] is None
+    assert "Access Denied" in data_invalid["message"]
+
+def test_queries_workflow_team_member_to_tl():
+    # 1. Team member posts a query to the Team Leader
+    query_payload = {
+        "senderName": "Priya S",
+        "senderEmail": "priya@taskflow.cloud",
+        "teamLeader": "Sabarinathan V",
+        "teamName": "Cloud & Core Infrastructure Squad",
+        "subject": "FastAPI Async Connection Pool Sizing",
+        "message": "Should we increase connection pool to 50 for burst workloads?",
+        "priority": "high",
+        "category": "Technical Clarification"
+    }
+    create_res = client.post("/api/queries", json=query_payload)
+    assert create_res.status_code == 201
+    created_query = create_res.json()
+    query_id = created_query["id"]
+    assert created_query["status"] == "pending"
+    assert created_query["senderName"] == "Priya S"
+
+    # 2. Team Leader responds and resolves the query
+    resp_payload = {
+        "response": "Yes, bump pool size to 50 and set max overflow to 20.",
+        "respondedBy": "Sabarinathan V (TL)",
+        "status": "resolved"
+    }
+    patch_res = client.patch(f"/api/queries/{query_id}/respond", json=resp_payload)
+    assert patch_res.status_code == 200
+    resolved_query = patch_res.json()
+    assert resolved_query["status"] == "resolved"
+    assert resolved_query["response"] == resp_payload["response"]
+    assert resolved_query["respondedBy"] == "Sabarinathan V (TL)"
+
+    # 3. List queries filtered by sender
+    list_res = client.get("/api/queries?senderEmail=priya@taskflow.cloud")
+    assert list_res.status_code == 200
+    assert any(q["id"] == query_id for q in list_res.json())
+
+    # 4. Clean up query
+    del_res = client.delete(f"/api/queries/{query_id}")
+    assert del_res.status_code == 204
+
+def test_member_profile_picture_and_contact_details_update():
+    # 1. Update member profile with picture and contact details
+    profile_payload = {
+        "email": "arun@taskflow.cloud",
+        "name": "Arun K",
+        "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 019-2834",
+        "department": "Frontend Engineering",
+        "location": "San Francisco, CA",
+        "bio": "Specialized in micro-frontends and accessible design systems."
+    }
+    res = client.put("/api/teams/profile/update", json=profile_payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["user"]["email"] == "arun@taskflow.cloud"
+    assert data["user"]["phone"] == "+1 (555) 019-2834"
+    assert data["user"]["department"] == "Frontend Engineering"
+    assert data["user"]["picture"] == profile_payload["picture"]
+
+    # 2. Verify it is reflected in authorized members
+    auth_res = client.get("/api/teams/members/authorized")
+    assert auth_res.status_code == 200
+    members = auth_res.json()
+    arun = next((m for m in members if m["email"] == "arun@taskflow.cloud"), None)
+    assert arun is not None
+    assert arun["phone"] == "+1 (555) 019-2834"
+    assert arun["picture"] == profile_payload["picture"]
+
+
+
+
 
 
 

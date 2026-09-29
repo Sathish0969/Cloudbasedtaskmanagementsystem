@@ -266,6 +266,38 @@ export async function addTeamMember(teamId, memberData) {
   return res.json();
 }
 
+export async function updateTeamMember(teamId, memberIdOrName, memberData) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/teams/${teamId}/members/${encodeURIComponent(memberIdOrName)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
+    body: JSON.stringify(memberData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to update member profile');
+  }
+  return res.json();
+}
+
+export async function updateUserProfile(profileData) {
+  const res = await fetch(`${API_BASE}/teams/profile/update`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(profileData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to update user profile');
+  }
+  return res.json();
+}
+
 export async function removeTeamMember(teamId, memberIdOrName) {
   const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/teams/${teamId}/members/${encodeURIComponent(memberIdOrName)}`, {
@@ -295,5 +327,91 @@ export async function deleteTeam(teamId) {
   }
   return true;
 }
+
+export async function fetchAuthorizedMembers() {
+  const res = await fetch(`${API_BASE}/teams/members/authorized`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch authorized members: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function verifyTeamMemberEmail(email) {
+  const res = await fetch(`${API_BASE}/teams/verify-member`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: (email || '').trim() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Member verification check failed');
+  }
+  return res.json();
+}
+
+// ==========================================
+// Queries API (Team Member to Team Leader)
+// ==========================================
+
+export async function fetchQueries({ senderEmail, status, category } = {}) {
+  const params = new URLSearchParams();
+  if (senderEmail && senderEmail.trim()) params.append('senderEmail', senderEmail.trim());
+  if (status && status !== 'all') params.append('status', status);
+  if (category && category !== 'all') params.append('category', category);
+
+  const url = `${API_BASE}/queries${params.toString() ? `?${params.toString()}` : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load queries: ${res.statusText}`);
+  return res.json();
+}
+
+export async function createQuery(queryData) {
+  const currentRole = localStorage.getItem('tf_role') || 'employee';
+  const res = await fetch(`${API_BASE}/queries`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+      'X-User-Name': queryData.senderName || 'Team Member'
+    },
+    body: JSON.stringify(queryData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to submit query');
+  }
+  return res.json();
+}
+
+export async function respondToQuery(queryId, { response, status = 'resolved', respondedBy = 'Team Leader' }) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
+  const res = await fetch(`${API_BASE}/queries/${queryId}/respond`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+      'X-User-Name': respondedBy
+    },
+    body: JSON.stringify({ response, status, respondedBy }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to submit response');
+  }
+  return res.json();
+}
+
+export async function deleteQuery(queryId) {
+  const res = await fetch(`${API_BASE}/queries/${queryId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to delete query');
+  }
+  return true;
+}
+
+
 
 

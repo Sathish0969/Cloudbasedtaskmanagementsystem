@@ -48,7 +48,7 @@ export default function RoleSelect({ onSelectRole }) {
 
         <div className="tf-role-cards-grid">
           {/* Manager Card */}
-          <div className="tf-role-card tf-role-manager" onClick={() => onSelectRole('manager')}>
+          <div className="tf-role-card tf-role-manager" onClick={() => onSelectRole('manager', 'login')}>
             <div className="tf-role-avatar-circle tf-manager-circle">
               <div className="tf-manager-svg-icon">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
