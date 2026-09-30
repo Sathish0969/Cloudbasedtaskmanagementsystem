@@ -111,5 +111,111 @@
     ],
     "createdAt": "2026-09-18T09:00:00",
     "updatedAt": "2026-09-28T20:00:00"
+  },
+  {
+    "id": "team-03",
+    "name": "AI & Intelligent Automation Pod",
+    "description": "Builds machine learning pipelines, LLM-driven task summarization, and predictive workflow automation services.",
+    "teamLeader": "Sabarinathan V",
+    "teamLeaderEmail": "sabarinathan.tl@taskflow.cloud",
+    "members": [
+      {
+        "id": "mem-109",
+        "name": "Deepak R",
+        "email": "deepak.r@taskflow.cloud",
+        "role": "Lead ML Engineer",
+        "avatar": "D",
+        "picture": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 349-1029",
+        "department": "AI & Machine Learning",
+        "location": "San Jose, CA",
+        "bio": "Specialized in LLM fine-tuning, retrieval-augmented generation (RAG), and intelligent task triage.",
+        "status": "active",
+        "joinedAt": "2026-09-22"
+      },
+      {
+        "id": "mem-110",
+        "name": "Meera N",
+        "email": "meera.n@taskflow.cloud",
+        "role": "Data Platform Engineer",
+        "avatar": "M",
+        "picture": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 882-9411",
+        "department": "Data Platform & Analytics",
+        "location": "Seattle, WA",
+        "bio": "Orchestrates Apache Kafka event streams, real-time telemetry, and DynamoDB data modeling.",
+        "status": "active",
+        "joinedAt": "2026-09-23"
+      },
+      {
+        "id": "mem-111",
+        "name": "Rohit V",
+        "email": "rohit.v@taskflow.cloud",
+        "role": "MLOps Specialist",
+        "avatar": "R",
+        "picture": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 741-9922",
+        "department": "AI & Machine Learning",
+        "location": "Austin, TX",
+        "bio": "Automates GPU inference scaling, Docker model containers, and continuous model performance monitors.",
+        "status": "active",
+        "joinedAt": "2026-09-24"
+      }
+    ],
+    "createdAt": "2026-09-22T09:00:00",
+    "updatedAt": "2026-09-30T12:00:00"
+  },
+  {
+    "id": "team-04",
+    "name": "CyberSecurity & Compliance Guild",
+    "description": "Architects Zero Trust network security, automated vulnerability remediation, AWS KMS encryption, and SOC2 compliance.",
+    "teamLeader": "Sabarinathan V",
+    "teamLeaderEmail": "sabarinathan.tl@taskflow.cloud",
+    "members": [
+      {
+        "id": "mem-112",
+        "name": "Sneha Patel",
+        "email": "sneha.p@taskflow.cloud",
+        "role": "Security Operations Lead",
+        "avatar": "S",
+        "picture": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 674-2901",
+        "department": "CyberSecurity & SecOps",
+        "location": "Boston, MA",
+        "bio": "Focuses on cloud posture management, threat modeling, and intrusion detection automation.",
+        "status": "active",
+        "joinedAt": "2026-09-24"
+      },
+      {
+        "id": "mem-113",
+        "name": "Aditya Menon",
+        "email": "aditya.m@taskflow.cloud",
+        "role": "Cloud SecOps Specialist",
+        "avatar": "A",
+        "picture": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 912-4433",
+        "department": "CyberSecurity & SecOps",
+        "location": "New York, NY",
+        "bio": "Automates IAM policy boundary checks, AWS KMS envelope encryption, and secrets rotation.",
+        "status": "active",
+        "joinedAt": "2026-09-25"
+      },
+      {
+        "id": "mem-114",
+        "name": "Vikram S",
+        "email": "vikram@taskflow.cloud",
+        "role": "Compliance Analyst",
+        "avatar": "V",
+        "picture": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&q=80",
+        "phone": "+1 (555) 438-1290",
+        "department": "CyberSecurity & SecOps",
+        "location": "Chicago, IL",
+        "bio": "Manages automated SOC2 Type II compliance evidence collection and audit logging.",
+        "status": "active",
+        "joinedAt": "2026-09-26"
+      }
+    ],
+    "createdAt": "2026-09-24T09:00:00",
+    "updatedAt": "2026-09-30T12:00:00"
   }
 ]

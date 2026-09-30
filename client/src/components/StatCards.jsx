@@ -52,7 +52,7 @@ export default function StatCards({ role, stats, tasks = [] }) {
     {
       id: 'completed',
       label: 'Completed',
-      value: completedCount > 0 ? completedCount : 3,
+      value: completedCount,
       icon: Check,
       cardClass: 'tf-stat-green',
       iconClass: 'tf-icon-green'
@@ -60,7 +60,7 @@ export default function StatCards({ role, stats, tasks = [] }) {
     {
       id: 'in-progress',
       label: 'In Progress',
-      value: inProgressCount > 0 ? inProgressCount : 4,
+      value: inProgressCount,
       icon: Clock,
       cardClass: 'tf-stat-amber',
       iconClass: 'tf-icon-amber'
@@ -68,7 +68,7 @@ export default function StatCards({ role, stats, tasks = [] }) {
     {
       id: 'pending',
       label: 'Pending',
-      value: todoCount > 0 ? todoCount : 2,
+      value: todoCount,
       icon: AlertCircle,
       cardClass: 'tf-stat-red',
       iconClass: 'tf-icon-red'
@@ -76,7 +76,7 @@ export default function StatCards({ role, stats, tasks = [] }) {
     {
       id: 'total',
       label: 'Total Tasks',
-      value: totalTasksCount > 0 ? totalTasksCount : 9,
+      value: totalTasksCount,
       icon: Calendar,
       cardClass: 'tf-stat-blue',
       iconClass: 'tf-icon-blue'

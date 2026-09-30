@@ -301,9 +301,15 @@ export default function TaskModal({
                 <option value="Priya S">Priya S (Backend Engineer)</option>
                 <option value="Vignesh M">Vignesh M (Cloud Architect)</option>
                 <option value="Nivetha R">Nivetha R (QA & UX Reviewer)</option>
+                <option value="Gowtham G">Gowtham G (Cloud & DevOps Engineer)</option>
                 <option value="Karthik D">Karthik D (DevOps Specialist)</option>
                 <option value="Ananya R">Ananya R (Product Designer)</option>
-                <option value="Vikram S">Vikram S (Security Analyst)</option>
+                <option value="Deepak R">Deepak R (Lead ML Engineer)</option>
+                <option value="Meera N">Meera N (Data Platform Engineer)</option>
+                <option value="Rohit V">Rohit V (MLOps Specialist)</option>
+                <option value="Sneha Patel">Sneha Patel (Security Operations Lead)</option>
+                <option value="Aditya Menon">Aditya Menon (Cloud SecOps Specialist)</option>
+                <option value="Vikram S">Vikram S (Compliance Analyst)</option>
               </select>
             </div>
           </div>
@@ -320,6 +326,10 @@ export default function TaskModal({
               <option value="Web App">Web App</option>
               <option value="Backend">Backend</option>
               <option value="Cloud">Cloud</option>
+              <option value="AI & Automation">AI & Automation</option>
+              <option value="Data Platform">Data Platform</option>
+              <option value="Security">Security</option>
+              <option value="Compliance">Compliance</option>
               <option value="Mobile App">Mobile App</option>
               <option value="Documentation">Documentation</option>
             </select>

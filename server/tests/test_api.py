@@ -378,6 +378,69 @@ def test_member_profile_picture_and_contact_details_update():
     assert arun["phone"] == "+1 (555) 019-2834"
     assert arun["picture"] == profile_payload["picture"]
 
+def test_employee_task_isolation():
+    # 1. Manager / TL sees all tasks
+    all_res = client.get("/api/tasks", headers={"X-User-Role": "teamleader"})
+    assert all_res.status_code == 200
+    all_tasks = all_res.json()
+    assert len(all_tasks) > 1
+
+    # 2. Employee "Deepak R" only sees tasks assigned to Deepak R
+    deepak_res = client.get(
+        "/api/tasks", 
+        headers={
+            "X-User-Role": "employee",
+            "X-User-Name": "Deepak R",
+            "X-User-Email": "deepak.r@taskflow.cloud"
+        }
+    )
+    assert deepak_res.status_code == 200
+    deepak_tasks = deepak_res.json()
+    assert len(deepak_tasks) > 0
+    for t in deepak_tasks:
+        assert "deepak" in t["assignedTo"].lower()
+
+    # 3. Employee cannot view other employee's task by ID (403 Forbidden)
+    other_task = next((t for t in all_tasks if "deepak" not in (t.get("assignedTo") or "").lower()), None)
+    assert other_task is not None
+    forbidden_get = client.get(
+        f"/api/tasks/{other_task['id']}",
+        headers={
+            "X-User-Role": "employee",
+            "X-User-Name": "Deepak R",
+            "X-User-Email": "deepak.r@taskflow.cloud"
+        }
+    )
+    assert forbidden_get.status_code == 403
+    assert "Access Denied" in forbidden_get.json()["detail"]
+
+    # 4. Employee cannot update status of other employee's task (403 Forbidden)
+    forbidden_patch = client.patch(
+        f"/api/tasks/{other_task['id']}/status",
+        json={"status": "in-progress", "user": "Deepak R"},
+        headers={
+            "X-User-Role": "employee",
+            "X-User-Name": "Deepak R",
+            "X-User-Email": "deepak.r@taskflow.cloud"
+        }
+    )
+    assert forbidden_patch.status_code == 403
+    assert "Access Denied" in forbidden_patch.json()["detail"]
+
+    # 5. Employee cannot post comments on other employee's task (403 Forbidden)
+    forbidden_comm = client.post(
+        f"/api/tasks/{other_task['id']}/comments",
+        json={"author": "Deepak R", "text": "Unauthorized comment attempt"},
+        headers={
+            "X-User-Role": "employee",
+            "X-User-Name": "Deepak R",
+            "X-User-Email": "deepak.r@taskflow.cloud"
+        }
+    )
+    assert forbidden_comm.status_code == 403
+    assert "Access Denied" in forbidden_comm.json()["detail"]
+
+
 
 
 

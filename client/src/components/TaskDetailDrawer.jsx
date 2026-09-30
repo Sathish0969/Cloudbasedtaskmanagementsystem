@@ -529,12 +529,20 @@ export default function TaskDetailDrawer({
                               handleSave({ assignedTo: e.target.value });
                             }}
                           >
+                            <option value="Sabarinathan V">Sabarinathan V (Cloud Lead)</option>
                             <option value="Arun K">Arun K (Frontend)</option>
                             <option value="Priya S">Priya S (Backend)</option>
                             <option value="Vignesh M">Vignesh M (Cloud)</option>
                             <option value="Nivetha R">Nivetha R (QA)</option>
+                            <option value="Gowtham G">Gowtham G (DevOps)</option>
                             <option value="Karthik D">Karthik D (DevOps)</option>
-                            <option value="Sabarinathan V">Sabarinathan V (Cloud Lead)</option>
+                            <option value="Ananya R">Ananya R (Design)</option>
+                            <option value="Deepak R">Deepak R (Lead ML)</option>
+                            <option value="Meera N">Meera N (Data Platform)</option>
+                            <option value="Rohit V">Rohit V (MLOps)</option>
+                            <option value="Sneha Patel">Sneha Patel (SecOps Lead)</option>
+                            <option value="Aditya Menon">Aditya Menon (Cloud SecOps)</option>
+                            <option value="Vikram S">Vikram S (Compliance)</option>
                           </select>
                         </div>
                         {details && (details.phone || details.location) && (
@@ -572,6 +580,10 @@ export default function TaskDetailDrawer({
                     <option value="Web App">Web App</option>
                     <option value="Backend">Backend</option>
                     <option value="Cloud">Cloud</option>
+                    <option value="AI & Automation">AI & Automation</option>
+                    <option value="Data Platform">Data Platform</option>
+                    <option value="Security">Security</option>
+                    <option value="Compliance">Compliance</option>
                     <option value="Mobile App">Mobile App</option>
                     <option value="Documentation">Documentation</option>
                   </select>
