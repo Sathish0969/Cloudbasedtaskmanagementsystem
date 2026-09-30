@@ -26,6 +26,31 @@ import {
 import { taskWs } from './services/websocket';
 import './App.css';
 
+// Utility: Determine whether a task belongs to a specific user
+export function isTaskAssignedToUser(task, currentUser) {
+  if (!task || !currentUser) return false;
+  const assigned = (task.assignedTo || '').trim().toLowerCase();
+  const assignedEmail = (task.assignedToEmail || '').trim().toLowerCase();
+  const userName = (currentUser.name || '').trim().toLowerCase();
+  const userEmail = (currentUser.email || '').trim().toLowerCase();
+
+  // 1. Direct equality
+  if (userName && assigned === userName) return true;
+  if (userEmail && (assigned === userEmail || assignedEmail === userEmail)) return true;
+
+  // 2. Base name comparison (strip parenthesized role, e.g. "Sabarinathan V (TL)")
+  const cleanAssigned = assigned.replace(/\s*\(.*?\)\s*/g, '').trim();
+  const cleanUser = userName.replace(/\s*\(.*?\)\s*/g, '').trim();
+  if (cleanAssigned && cleanUser && cleanAssigned === cleanUser) return true;
+
+  // 3. Name prefix/contains fallback
+  if (cleanAssigned && cleanUser && (cleanAssigned.startsWith(cleanUser) || cleanUser.startsWith(cleanAssigned))) {
+    return true;
+  }
+
+  return false;
+}
+
 // Fallback tasks in case backend storage is empty/offline
 const DEFAULT_TASKS = [
   {
@@ -237,15 +262,23 @@ export default function App() {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
+      const fetchParams = { status: 'all', priority: 'all' };
+      if (currentRole === 'employee' && user?.name) {
+        fetchParams.assignedTo = user.name;
+      }
       const [taskList, statsData] = await Promise.all([
-        fetchTasks({ status: 'all', priority: 'all' }).catch(() => null),
+        fetchTasks(fetchParams).catch(() => null),
         fetchTaskStats().catch(() => null)
       ]);
 
-      if (taskList && taskList.length > 0) {
+      if (taskList !== null) {
         setTasks(taskList);
       } else {
-        setTasks(DEFAULT_TASKS);
+        if (currentRole === 'employee') {
+          setTasks(DEFAULT_TASKS.filter((t) => isTaskAssignedToUser(t, user)));
+        } else {
+          setTasks(DEFAULT_TASKS);
+        }
       }
 
       if (statsData) {
@@ -253,11 +286,15 @@ export default function App() {
       }
     } catch (err) {
       console.warn('Using default tasks due to connection notice:', err);
-      setTasks(DEFAULT_TASKS);
+      if (currentRole === 'employee') {
+        setTasks(DEFAULT_TASKS.filter((t) => isTaskAssignedToUser(t, user)));
+      } else {
+        setTasks(DEFAULT_TASKS);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentRole, user?.name, user?.email]);
 
   useEffect(() => {
     loadData();
@@ -276,6 +313,10 @@ export default function App() {
 
     // Real-Time Event Handlers
     const unbindCreated = taskWs.on('TASK_CREATED', (createdTask) => {
+      // Privacy rule: If current user is employee, do NOT add tasks assigned to other employees!
+      if (currentRole === 'employee' && !isTaskAssignedToUser(createdTask, user)) {
+        return;
+      }
       setTasks((prev) => {
         if (prev.some((t) => t.id === createdTask.id)) return prev;
         return [createdTask, ...prev];
@@ -657,18 +698,32 @@ export default function App() {
   };
 
   const handleOpenEditModal = (task) => {
+    if (currentRole === 'employee' && !isTaskAssignedToUser(task, user)) {
+      addToast('🔒 Access Restricted: You can only edit tasks assigned to you.', 'error');
+      return;
+    }
     setTaskToEdit(task);
     setIsModalOpen(true);
   };
 
   // Detail Drawer Opener (Linear & ClickUp view)
   const handleOpenDetail = (task) => {
+    if (currentRole === 'employee' && !isTaskAssignedToUser(task, user)) {
+      addToast('🔒 Access Restricted: You can only view details of tasks assigned to you.', 'error');
+      return;
+    }
     setActiveDetailTask(task);
   };
 
   // Filter Tasks based on Selected Tab, Role, and Search Query
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
+
+    // Privacy Rule: If logged in as an Employee, strictly show ONLY their assigned tasks!
+    // Never show another employee's tasks.
+    if (currentRole === 'employee') {
+      result = result.filter((t) => isTaskAssignedToUser(t, user));
+    }
 
     // Status filter
     if (selectedStatus && selectedStatus !== 'all') {
@@ -695,7 +750,7 @@ export default function App() {
     }
 
     return result;
-  }, [tasks, selectedStatus, searchQuery]);
+  }, [tasks, selectedStatus, searchQuery, currentRole, user]);
 
   // Screen 1: Role Selection
   if (currentScreen === 'role-select') {
@@ -760,7 +815,7 @@ export default function App() {
               <StatCards
                 role={currentRole}
                 stats={stats}
-                tasks={tasks}
+                tasks={currentRole === 'employee' ? filteredTasks : tasks}
               />
 
               {/* View Toggle Bar (Table vs Interactive Kanban) */}
@@ -864,6 +919,8 @@ export default function App() {
                   { name: 'Web App', count: 4, progress: 75, color: '#b94b39' },
                   { name: 'Backend', count: 3, progress: 90, color: '#1e6b47' },
                   { name: 'Cloud', count: 2, progress: 60, color: '#d97706' },
+                  { name: 'AI & Automation', count: 2, progress: 50, color: '#8b5cf6' },
+                  { name: 'Security & Compliance', count: 2, progress: 65, color: '#ec4899' },
                   { name: 'Mobile App', count: 2, progress: 45, color: '#6366f1' },
                   { name: 'Documentation', count: 2, progress: 85, color: '#0ea5e9' }
                 ].map((proj, i) => (

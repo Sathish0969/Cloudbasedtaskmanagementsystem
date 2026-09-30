@@ -48,9 +48,15 @@ const AVAILABLE_CANDIDATES = [
   { name: 'Priya S', email: 'priya@taskflow.cloud', role: 'Backend Engineer' },
   { name: 'Vignesh M', email: 'vignesh@taskflow.cloud', role: 'Cloud Architect' },
   { name: 'Nivetha R', email: 'nivetha@taskflow.cloud', role: 'QA & UX Reviewer' },
+  { name: 'Gowtham G', email: 'gowthamgopalakrishnan0207@gmail.com', role: 'Cloud & DevOps Engineer' },
   { name: 'Karthik D', email: 'karthik@taskflow.cloud', role: 'DevOps Specialist' },
   { name: 'Ananya R', email: 'ananya@taskflow.cloud', role: 'Product Designer' },
-  { name: 'Vikram S', email: 'vikram@taskflow.cloud', role: 'Security Analyst' }
+  { name: 'Deepak R', email: 'deepak.r@taskflow.cloud', role: 'Lead ML Engineer' },
+  { name: 'Meera N', email: 'meera.n@taskflow.cloud', role: 'Data Platform Engineer' },
+  { name: 'Rohit V', email: 'rohit.v@taskflow.cloud', role: 'MLOps Specialist' },
+  { name: 'Sneha Patel', email: 'sneha.p@taskflow.cloud', role: 'Security Operations Lead' },
+  { name: 'Aditya Menon', email: 'aditya.m@taskflow.cloud', role: 'Cloud SecOps Specialist' },
+  { name: 'Vikram S', email: 'vikram@taskflow.cloud', role: 'Compliance Analyst' }
 ];
 
 // Member Avatar component with automatic error reset & fallback

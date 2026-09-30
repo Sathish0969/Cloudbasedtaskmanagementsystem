@@ -14,26 +14,115 @@ from app.services.websocket_manager import ws_manager
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
+import re
+
+def _is_task_assigned_to_user(task: dict, user_name: Optional[str], user_email: Optional[str]) -> bool:
+    if not task:
+        return False
+    assigned = (task.get("assignedTo") or "").strip().lower()
+    assigned_email = (task.get("assignedToEmail") or "").strip().lower()
+    
+    clean_user = (user_name or "").strip().lower()
+    clean_email = (user_email or "").strip().lower()
+
+    if clean_user:
+        u_base = re.sub(r"\s*\(.*?\)\s*", "", clean_user).strip()
+        a_base = re.sub(r"\s*\(.*?\)\s*", "", assigned).strip()
+        if a_base and u_base and (a_base == u_base or a_base.startswith(u_base) or u_base.startswith(a_base)):
+            return True
+
+    if clean_email:
+        if assigned == clean_email or assigned_email == clean_email:
+            return True
+
+    return False
+
 @router.get("", response_model=List[TaskOut])
 async def list_tasks(
     status: Optional[str] = Query(None, description="Filter by status (to-do, backlog, in-progress, in-review, completed, overdue)"),
     priority: Optional[str] = Query(None, description="Filter by priority (low, medium, high, urgent)"),
-    search: Optional[str] = Query(None, description="Search in title, description, tags, or assignees")
+    search: Optional[str] = Query(None, description="Search in title, description, tags, or assignees"),
+    assigned_to: Optional[str] = Query(None, alias="assignedTo", description="Filter by assigned employee"),
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user"),
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name", description="Name of the requesting user"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email", description="Email of the requesting user")
 ):
     storage = get_storage_service()
-    return await storage.get_all(status=status, priority=priority, search=search)
+    all_tasks = await storage.get_all(status=status, priority=priority, search=search)
+
+    # Privacy Rule: An employee must NEVER see other employees' tasks!
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee":
+        user_name = x_user_name or assigned_to
+        all_tasks = [t for t in all_tasks if _is_task_assigned_to_user(t, user_name, x_user_email)]
+    elif assigned_to:
+        all_tasks = [t for t in all_tasks if _is_task_assigned_to_user(t, assigned_to, None)]
+
+    return all_tasks
 
 @router.get("/stats", response_model=TaskStats)
-async def get_stats():
+async def get_stats(
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role"),
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email")
+):
     storage = get_storage_service()
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee":
+        # Calculate statistics strictly for this employee's assigned tasks
+        from datetime import datetime
+        all_tasks = await storage.get_all()
+        emp_tasks = [t for t in all_tasks if _is_task_assigned_to_user(t, x_user_name, x_user_email)]
+        total = len(emp_tasks)
+        completed = sum(1 for t in emp_tasks if t.get("status") == "completed")
+        in_progress = sum(1 for t in emp_tasks if t.get("status") == "in-progress")
+        in_review = sum(1 for t in emp_tasks if t.get("status") == "in-review")
+        backlog = sum(1 for t in emp_tasks if t.get("status") in ("to-do", "backlog"))
+        
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        overdue = sum(
+            1 for t in emp_tasks
+            if t.get("status") == "overdue" or (t.get("status") != "completed" and t.get("dueDate") and t.get("dueDate") < today_str)
+        )
+        by_priority = {
+            "urgent": sum(1 for t in emp_tasks if t.get("priority") == "urgent"),
+            "high": sum(1 for t in emp_tasks if t.get("priority") == "high"),
+            "medium": sum(1 for t in emp_tasks if t.get("priority") == "medium"),
+            "low": sum(1 for t in emp_tasks if t.get("priority") == "low")
+        }
+        completion_rate = round((completed / total * 100)) if total > 0 else 0
+        return TaskStats(
+            total=total,
+            completed=completed,
+            inProgress=in_progress,
+            inReview=in_review,
+            backlog=backlog,
+            overdue=overdue,
+            totalEmployees=1,
+            completionRate=completion_rate,
+            byPriority=by_priority
+        )
     return await storage.get_stats()
 
 @router.get("/{task_id}", response_model=TaskOut)
-async def get_task(task_id: str):
+async def get_task(
+    task_id: str,
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role"),
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email")
+):
     storage = get_storage_service()
     task = await storage.get_by_id(task_id)
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee":
+        if not _is_task_assigned_to_user(task, x_user_name, x_user_email):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access Denied: Employees can only view their own assigned tasks."
+            )
     return task
 
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
@@ -60,7 +149,9 @@ async def create_task(
 async def update_task(
     task_id: str, 
     task_in: TaskUpdate,
-    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user")
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user"),
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email")
 ):
     if x_user_role:
         role_normalized = x_user_role.strip().lower()
@@ -69,8 +160,18 @@ async def update_task(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access Denied: Managers have view-only access on tasks. Tasks can only be modified by the Team Leader (TL)."
             )
-
     storage = get_storage_service()
+    existing = await storage.get_by_id(task_id)
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee" and not _is_task_assigned_to_user(existing, x_user_name, x_user_email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You cannot modify tasks assigned to other employees."
+        )
+
     updated = await storage.update(task_id, task_in.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -83,7 +184,8 @@ async def update_task_status(
     task_id: str, 
     status_in: TaskStatusUpdate,
     x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user"),
-    x_user_name: Optional[str] = Header(None, alias="X-User-Name", description="Name of the requesting user")
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name", description="Name of the requesting user"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email", description="Email of the requesting user")
 ):
     valid_statuses = ["to-do", "backlog", "in-progress", "in-review", "completed", "overdue"]
     if status_in.status not in valid_statuses:
@@ -92,8 +194,19 @@ async def update_task_status(
             detail=f"Invalid status '{status_in.status}'. Valid statuses: {valid_statuses}"
         )
     storage = get_storage_service()
+    existing = await storage.get_by_id(task_id)
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
     user_name = status_in.user or x_user_name or "Sabarinathan V"
     role_normalized = (x_user_role or "").strip().lower()
+
+    if role_normalized == "employee" and not _is_task_assigned_to_user(existing, user_name, x_user_email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You cannot change status of tasks assigned to other employees."
+        )
+
     from datetime import datetime
     now = datetime.now().isoformat()
 
@@ -159,11 +272,24 @@ async def request_task_completion(
     task_id: str,
     status_in: Optional[TaskStatusUpdate] = None,
     x_user_role: Optional[str] = Header(None, alias="X-User-Role"),
-    x_user_name: Optional[str] = Header(None, alias="X-User-Name")
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email")
 ):
     storage = get_storage_service()
+    existing = await storage.get_by_id(task_id)
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
     user_name = (status_in and status_in.user) or x_user_name or "Employee"
     notes = (status_in and status_in.notes) or "Requesting TL confirmation to mark completed"
+
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee" and not _is_task_assigned_to_user(existing, user_name, x_user_email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You can only request completion for tasks assigned to you."
+        )
+
     from datetime import datetime
     now = datetime.now().isoformat()
 
@@ -266,16 +392,29 @@ async def delete_task(
     return None
 
 @router.post("/{task_id}/comments", response_model=TaskOut)
-async def add_task_comment(task_id: str, comment_in: CommentCreate):
+async def add_task_comment(
+    task_id: str, 
+    comment_in: CommentCreate,
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role"),
+    x_user_name: Optional[str] = Header(None, alias="X-User-Name"),
+    x_user_email: Optional[str] = Header(None, alias="X-User-Email")
+):
     storage = get_storage_service()
-    author = comment_in.author or "Sabarinathan V"
+    task = await storage.get_by_id(task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+    role_normalized = (x_user_role or "").strip().lower()
+    if role_normalized == "employee" and not _is_task_assigned_to_user(task, x_user_name or comment_in.author, x_user_email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You can only comment on tasks assigned to you."
+        )
+
+    author = comment_in.author or x_user_name or "Sabarinathan V"
     if hasattr(storage, "add_comment"):
         updated = await storage.add_comment(task_id, author=author, text=comment_in.text)
     else:
-        # Fallback via general update
-        task = await storage.get_by_id(task_id)
-        if not task:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
         comments = list(task.get("comments") or [])
         import uuid, datetime
         comments.append({

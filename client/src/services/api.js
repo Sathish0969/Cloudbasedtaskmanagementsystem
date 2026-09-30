@@ -6,26 +6,52 @@ export async function fetchHealth() {
   return res.json();
 }
 
-export async function fetchTasks({ status, priority, search } = {}) {
+function getAuthHeaders() {
+  const role = localStorage.getItem('tf_role') || 'manager';
+  const headers = { 'X-User-Role': role };
+  try {
+    const user = JSON.parse(localStorage.getItem('tf_user') || '{}');
+    if (user.name) headers['X-User-Name'] = user.name;
+    if (user.email) headers['X-User-Email'] = user.email;
+  } catch {}
+  return headers;
+}
+
+export async function fetchTasks({ status, priority, search, assignedTo } = {}) {
+  const authHeaders = getAuthHeaders();
+  const currentRole = authHeaders['X-User-Role'];
+  const userName = authHeaders['X-User-Name'];
+
   const params = new URLSearchParams();
   if (status && status !== 'all') params.append('status', status);
   if (priority && priority !== 'all') params.append('priority', priority);
   if (search && search.trim()) params.append('search', search.trim());
+  if (assignedTo && assignedTo.trim()) {
+    params.append('assignedTo', assignedTo.trim());
+  } else if (currentRole === 'employee' && userName) {
+    params.append('assignedTo', userName);
+  }
 
   const url = `${API_BASE}/tasks${params.toString() ? `?${params.toString()}` : ''}`;
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: authHeaders
+  });
   if (!res.ok) throw new Error(`Failed to load tasks: ${res.statusText}`);
   return res.json();
 }
 
 export async function fetchTaskStats() {
-  const res = await fetch(`${API_BASE}/tasks/stats`);
+  const res = await fetch(`${API_BASE}/tasks/stats`, {
+    headers: getAuthHeaders()
+  });
   if (!res.ok) throw new Error(`Failed to load stats: ${res.statusText}`);
   return res.json();
 }
 
 export async function fetchTaskById(id) {
-  const res = await fetch(`${API_BASE}/tasks/${id}`);
+  const res = await fetch(`${API_BASE}/tasks/${id}`, {
+    headers: getAuthHeaders()
+  });
   if (!res.ok) throw new Error(`Failed to load task ${id}: ${res.statusText}`);
   return res.json();
 }
@@ -48,12 +74,11 @@ export async function createTask(taskData, role) {
 }
 
 export async function updateTask(id, taskData) {
-  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks/${id}`, {
     method: 'PUT',
     headers: { 
       'Content-Type': 'application/json',
-      'X-User-Role': currentRole,
+      ...getAuthHeaders()
     },
     body: JSON.stringify(taskData),
   });
@@ -65,12 +90,11 @@ export async function updateTask(id, taskData) {
 }
 
 export async function updateTaskStatus(id, status, user = 'User', notes = null) {
-  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks/${id}/status`, {
     method: 'PATCH',
     headers: { 
       'Content-Type': 'application/json',
-      'X-User-Role': currentRole,
+      ...getAuthHeaders()
     },
     body: JSON.stringify({ status, user, notes }),
   });
@@ -82,12 +106,11 @@ export async function updateTaskStatus(id, status, user = 'User', notes = null) 
 }
 
 export async function requestTaskCompletion(id, user = 'Employee', notes = '') {
-  const currentRole = localStorage.getItem('tf_role') || 'employee';
   const res = await fetch(`${API_BASE}/tasks/${id}/request-completion`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-User-Role': currentRole,
+      ...getAuthHeaders()
     },
     body: JSON.stringify({ status: 'in-review', user, notes }),
   });
@@ -197,7 +220,10 @@ export async function uploadAttachment(file) {
 export async function addComment(taskId, { author, text }) {
   const res = await fetch(`${API_BASE}/tasks/${taskId}/comments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
     body: JSON.stringify({ author, text }),
   });
   if (!res.ok) {

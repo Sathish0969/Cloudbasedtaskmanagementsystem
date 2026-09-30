@@ -840,6 +840,30 @@
         "author": "Antigravity Reviewer",
         "text": "Real-time task synchronization test comment.",
         "createdAt": "2026-09-30T01:23:43.619421"
+      },
+      {
+        "id": "comm-ec0e31",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T19:28:41.930476"
+      },
+      {
+        "id": "comm-187fee",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T19:36:26.257754"
+      },
+      {
+        "id": "comm-a5d498",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T19:49:46.574061"
+      },
+      {
+        "id": "comm-a39902",
+        "author": "Antigravity Reviewer",
+        "text": "Real-time task synchronization test comment.",
+        "createdAt": "2026-09-30T19:50:12.651214"
       }
     ],
     "activityLog": [
@@ -854,11 +878,35 @@
         "user": "Antigravity Reviewer",
         "action": "Added comment: \"Real-time task synchronization...\"",
         "timestamp": "2026-09-30T01:23:43.619421"
+      },
+      {
+        "id": "act-e959c2",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T19:28:41.930476"
+      },
+      {
+        "id": "act-ac0432",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T19:36:26.257754"
+      },
+      {
+        "id": "act-eeda87",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T19:49:46.574061"
+      },
+      {
+        "id": "act-e5cc67",
+        "user": "Antigravity Reviewer",
+        "action": "Added comment: \"Real-time task synchronization...\"",
+        "timestamp": "2026-09-30T19:50:12.651214"
       }
     ],
     "attachments": [],
     "createdAt": "2026-09-22T10:00:00",
-    "updatedAt": "2026-09-30T01:23:43.619421"
+    "updatedAt": "2026-09-30T19:50:12.651214"
   },
   {
     "id": "task-107",
@@ -879,5 +927,221 @@
     "attachments": [],
     "createdAt": "2026-09-22T11:00:00",
     "updatedAt": "2026-09-22T11:00:00"
+  },
+  {
+    "id": "task-108",
+    "title": "Implement LLM Task Auto-Categorization",
+    "description": "Integrate lightweight embedding models to automatically classify incoming user tasks by priority, tags, and team department.",
+    "assignedTo": "Deepak R",
+    "project": "AI & Automation",
+    "status": "in-progress",
+    "priority": "high",
+    "dueDate": "2026-10-06",
+    "tags": [
+      "ai",
+      "nlp",
+      "llm",
+      "automation"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-108-1",
+        "text": "Benchmark embedding model inference latency",
+        "completed": true
+      },
+      {
+        "id": "sub-108-2",
+        "text": "Create FastAPI route for real-time task categorization",
+        "completed": false
+      },
+      {
+        "id": "sub-108-3",
+        "text": "Wire confidence scores into Kanban card tags",
+        "completed": false
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-108-1",
+        "author": "Deepak R",
+        "text": "Preliminary embeddings achieved 94% accuracy on synthetic task tags.",
+        "createdAt": "2026-09-30T10:15:00"
+      },
+      {
+        "id": "comm-108-2",
+        "author": "Sabarinathan V",
+        "text": "Great progress Deepak, make sure inference runs under 120ms.",
+        "createdAt": "2026-09-30T11:00:00"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-108-1",
+        "user": "Sabarinathan V",
+        "action": "Created task and assigned to Deepak R",
+        "timestamp": "2026-09-29T10:00:00"
+      },
+      {
+        "id": "act-108-2",
+        "user": "Deepak R",
+        "action": "Changed status to In Progress",
+        "timestamp": "2026-09-30T09:30:00"
+      }
+    ],
+    "attachments": [],
+    "completionRequested": false,
+    "createdAt": "2026-09-29T10:00:00",
+    "updatedAt": "2026-09-30T11:00:00"
+  },
+  {
+    "id": "task-109",
+    "title": "Real-time Telemetry & Kafka Stream Pipeline",
+    "description": "Architect event streaming pipeline to aggregate task activity logs and status changes for real-time analytics.",
+    "assignedTo": "Meera N",
+    "project": "Data Platform",
+    "status": "to-do",
+    "priority": "medium",
+    "dueDate": "2026-10-09",
+    "tags": [
+      "kafka",
+      "telemetry",
+      "streaming",
+      "data"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-109-1",
+        "text": "Define Avro schemas for task event payloads",
+        "completed": false
+      },
+      {
+        "id": "sub-109-2",
+        "text": "Provision Kafka topic with 3 partitions and retention policies",
+        "completed": false
+      }
+    ],
+    "comments": [],
+    "activityLog": [
+      {
+        "id": "act-109-1",
+        "user": "Sabarinathan V",
+        "action": "Created task and assigned to Meera N",
+        "timestamp": "2026-09-30T09:00:00"
+      }
+    ],
+    "attachments": [],
+    "completionRequested": false,
+    "createdAt": "2026-09-30T09:00:00",
+    "updatedAt": "2026-09-30T09:00:00"
+  },
+  {
+    "id": "task-110",
+    "title": "AWS KMS Envelope Encryption & Secrets Rotation",
+    "description": "Implement customer-managed AWS KMS keys for encrypting sensitive task attachments and automate quarterly secrets rotation.",
+    "assignedTo": "Aditya Menon",
+    "project": "Security",
+    "status": "in-progress",
+    "priority": "urgent",
+    "dueDate": "2026-10-04",
+    "tags": [
+      "security",
+      "kms",
+      "encryption",
+      "aws"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-110-1",
+        "text": "Configure KMS Customer Master Key (CMK) policy",
+        "completed": true
+      },
+      {
+        "id": "sub-110-2",
+        "text": "Implement client-side envelope encryption utility in Python",
+        "completed": true
+      },
+      {
+        "id": "sub-110-3",
+        "text": "Verify AWS CloudTrail audit logs for decrypt actions",
+        "completed": false
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-110-1",
+        "author": "Sneha Patel",
+        "text": "Ensure key rotation policy is set to 90 days in Terraform configuration.",
+        "createdAt": "2026-09-30T09:30:00"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-110-1",
+        "user": "Sabarinathan V",
+        "action": "Created task and assigned to Aditya Menon",
+        "timestamp": "2026-09-29T14:00:00"
+      },
+      {
+        "id": "act-110-2",
+        "user": "Aditya Menon",
+        "action": "Changed status to In Progress",
+        "timestamp": "2026-09-30T09:15:00"
+      }
+    ],
+    "attachments": [],
+    "completionRequested": false,
+    "createdAt": "2026-09-29T14:00:00",
+    "updatedAt": "2026-09-30T09:30:00"
+  },
+  {
+    "id": "task-111",
+    "title": "Automated SOC2 Evidence Collector Daemon",
+    "description": "Deploy automated cron monitor collecting daily IAM access reviews, MFA compliance reports, and S3 public access block verification.",
+    "assignedTo": "Sneha Patel",
+    "project": "Compliance",
+    "status": "in-review",
+    "priority": "high",
+    "dueDate": "2026-10-05",
+    "tags": [
+      "compliance",
+      "soc2",
+      "audit",
+      "security"
+    ],
+    "subtasks": [
+      {
+        "id": "sub-111-1",
+        "text": "Draft automated IAM credential report analyzer",
+        "completed": true
+      },
+      {
+        "id": "sub-111-2",
+        "text": "Generate signed PDF audit trail artifact",
+        "completed": true
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-111-1",
+        "author": "Sneha Patel",
+        "text": "All automated checks passing on staging; ready for final sign-off.",
+        "createdAt": "2026-09-30T14:20:00"
+      }
+    ],
+    "activityLog": [
+      {
+        "id": "act-111-1",
+        "user": "Sneha Patel",
+        "action": "Changed status to In Review",
+        "timestamp": "2026-09-30T14:20:00"
+      }
+    ],
+    "attachments": [],
+    "completionRequested": true,
+    "completionRequestedBy": "Sneha Patel",
+    "completionRequestedAt": "2026-09-30T14:20:00",
+    "completionNotes": "SOC2 evidence daemon validated on staging cluster; all checks passing.",
+    "createdAt": "2026-09-29T11:00:00",
+    "updatedAt": "2026-09-30T14:20:00"
   }
 ]
