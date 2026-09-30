@@ -45,6 +45,10 @@ export default function KanbanBoard({
   const [dragOverColumn, setDragOverColumn] = useState(null);
 
   const handleDragStart = (e, task) => {
+    if (role === 'manager') {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.setData('text/plain', task.id);
     e.dataTransfer.effectAllowed = 'move';
     setDraggingTaskId(task.id);
@@ -149,7 +153,7 @@ export default function KanbanBoard({
                       isDragging={draggingTaskId === task.id}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
-                      canDelete={role !== 'employee'}
+                      canDelete={role === 'teamleader'}
                       role={role}
                     />
                   ))

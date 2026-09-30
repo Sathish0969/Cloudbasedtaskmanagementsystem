@@ -132,9 +132,9 @@ export default function TaskCard({
       {task.completionRequested && (
         <div className="card-completion-requested-banner">
           <div className="card-completion-text">
-            <span>⏳ {role === 'teamleader' || role === 'manager' ? 'Awaiting Your Approval' : 'Pending TL Approval'}</span>
+            <span>⏳ {role === 'teamleader' ? 'Awaiting Your Approval' : 'Pending TL Approval'}</span>
           </div>
-          {(role === 'teamleader' || role === 'manager') && (
+          {role === 'teamleader' && (
             <div className="card-completion-quick-btns" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"

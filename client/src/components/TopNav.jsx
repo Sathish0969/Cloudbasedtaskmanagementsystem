@@ -202,15 +202,15 @@ export default function TopNav({
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               title="Click to view profile & options"
             >
-              <div className="tf-avatar-circle">
-                {user?.picture ? (
+              <div className="tf-avatar-circle" style={{ position: 'relative', overflow: 'hidden' }}>
+                <span>{user?.name ? user.name[0].toUpperCase() : 'S'}</span>
+                {user?.picture && (
                   <img 
                     src={user.picture} 
                     alt={user.name || 'User'} 
-                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
-                ) : (
-                  <span>{user?.name ? user.name[0] : 'S'}</span>
                 )}
               </div>
               <div className="tf-profile-info">
@@ -224,15 +224,15 @@ export default function TopNav({
               <div className="tf-profile-dropdown">
                 <div className="tf-dropdown-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <div className="tf-avatar-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}>
-                      {user?.picture ? (
+                    <div className="tf-avatar-circle" style={{ width: '38px', height: '38px', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+                      <span>{user?.name ? user.name[0].toUpperCase() : 'S'}</span>
+                      {user?.picture && (
                         <img 
                           src={user.picture} 
                           alt={user.name || 'User'} 
-                          style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
-                      ) : (
-                        <span>{user?.name ? user.name[0] : 'S'}</span>
                       )}
                     </div>
                     <div>

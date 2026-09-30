@@ -432,6 +432,11 @@ export default function App() {
 
   // Status Change (Optimistic Update with TL Confirmation Workflow)
   const handleStatusChange = async (taskId, newStatus, optionalNotes = '') => {
+    if (currentRole === 'manager') {
+      addToast('🔒 View-Only Mode: Managers can only view tasks. Task status changes and completion approvals are done exclusively by the Team Leader.', 'warning');
+      return;
+    }
+
     const isEmp = currentRole === 'employee';
     const isCompleted = newStatus === 'completed';
 
@@ -493,8 +498,8 @@ export default function App() {
 
   // TL: Confirm and Approve Task Completion
   const handleApproveCompletion = async (taskId) => {
-    if (currentRole !== 'teamleader' && currentRole !== 'manager') {
-      addToast('🔒 Access Restricted: Only Team Leader can approve task completion.', 'error');
+    if (currentRole !== 'teamleader') {
+      addToast('🔒 Access Restricted: Managers only view tasks. Task completion can only be approved by the Team Leader.', 'error');
       return;
     }
 
@@ -534,8 +539,8 @@ export default function App() {
 
   // TL: Reject / Request Revisions on Task Completion
   const handleRejectCompletion = async (taskId) => {
-    if (currentRole !== 'teamleader' && currentRole !== 'manager') {
-      addToast('🔒 Access Restricted: Only Team Leader can reject completion.', 'error');
+    if (currentRole !== 'teamleader') {
+      addToast('🔒 Access Restricted: Managers only view tasks. Rejecting completion can only be done by the Team Leader.', 'error');
       return;
     }
 
@@ -568,6 +573,10 @@ export default function App() {
   const handleSaveTask = async (taskData, editingId) => {
     try {
       if (editingId) {
+        if (currentRole === 'manager') {
+          addToast('🔒 View-Only Mode: Managers can only view tasks. Task editing is reserved for the Team Leader.', 'warning');
+          return;
+        }
         const updated = await updateTask(editingId, taskData).catch(() => ({
           ...taskData,
           id: editingId,
@@ -595,6 +604,10 @@ export default function App() {
 
   // Direct Update from Detail Drawer
   const handleUpdateTaskDirect = async (taskId, updates) => {
+    if (currentRole === 'manager') {
+      addToast('🔒 View-Only Mode: Managers can only view tasks.', 'warning');
+      return;
+    }
     try {
       const updated = await updateTask(taskId, updates).catch(() => ({
         ...updates,
@@ -609,10 +622,10 @@ export default function App() {
     }
   };
 
-  // Delete Task with Full Control
+  // Delete Task with Full Control (Team Leader only)
   const handleDeleteTask = async (taskId) => {
-    if (currentRole === 'employee') {
-      addToast('🔒 Access Restricted: Employees do not have permission to delete tasks.', 'error');
+    if (currentRole !== 'teamleader') {
+      addToast('🔒 Access Restricted: Managers and Employees cannot delete tasks. Only Team Leader can delete tasks.', 'error');
       return;
     }
 
@@ -807,6 +820,7 @@ export default function App() {
               user={user}
               tasks={tasks}
               addToast={addToast}
+              onUpdateUser={setUser}
             />
           )}
 

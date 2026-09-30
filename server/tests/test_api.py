@@ -138,11 +138,16 @@ def test_task_deletion_role_permissions():
     assert res_emp_del.status_code == 403
     assert "Access Denied" in res_emp_del.json()["detail"]
 
-    # 3. Manager tries to delete the task -> 204 No Content
+    # 3. Manager tries to delete the task -> 403 Forbidden (Managers have view-only access)
     res_mgr_del = client.delete(f"/api/tasks/{task_id}", headers={"X-User-Role": "manager"})
-    assert res_mgr_del.status_code == 204
+    assert res_mgr_del.status_code == 403
+    assert "Access Denied" in res_mgr_del.json()["detail"]
 
-    # 4. Verify task is deleted
+    # 4. Team Leader tries to delete the task -> 204 No Content
+    res_tl_del = client.delete(f"/api/tasks/{task_id}", headers={"X-User-Role": "teamleader"})
+    assert res_tl_del.status_code == 204
+
+    # 5. Verify task is deleted
     res_verify = client.get(f"/api/tasks/{task_id}")
     assert res_verify.status_code == 404
 
@@ -236,13 +241,30 @@ def test_task_completion_approval_workflow():
     assert emp_task["completionRequested"] is True
     assert emp_task["completionRequestedBy"] == "Dev Employee"
 
-    # 3. Employee attempts to approve the completion -> 403 Forbidden
+    # 3a. Employee attempts to approve the completion -> 403 Forbidden
     emp_approve_res = client.post(
         f"/api/tasks/{task_id}/approve-completion",
         headers={"X-User-Role": "employee", "X-User-Name": "Dev Employee"}
     )
     assert emp_approve_res.status_code == 403
-    assert "Team Leader or Manager approval required" in emp_approve_res.json()["detail"]
+    assert "Only Team Leader (TL) has the authority to approve task completion" in emp_approve_res.json()["detail"]
+
+    # 3b. Manager attempts to approve the completion -> 403 Forbidden (Manager only sees task)
+    mgr_approve_res = client.post(
+        f"/api/tasks/{task_id}/approve-completion",
+        headers={"X-User-Role": "manager", "X-User-Name": "Engineering Manager"}
+    )
+    assert mgr_approve_res.status_code == 403
+    assert "Only Team Leader (TL) has the authority to approve task completion" in mgr_approve_res.json()["detail"]
+
+    # 3c. Manager attempts to mark task completed via status patch -> 403 Forbidden
+    mgr_patch_res = client.patch(
+        f"/api/tasks/{task_id}/status",
+        json={"status": "completed"},
+        headers={"X-User-Role": "manager", "X-User-Name": "Engineering Manager"}
+    )
+    assert mgr_patch_res.status_code == 403
+    assert "Managers have view-only access" in mgr_patch_res.json()["detail"]
 
     # 4. Team Leader approves the completion -> 200 OK
     tl_approve_res = client.post(
@@ -266,7 +288,16 @@ def test_task_completion_approval_workflow():
     assert req_res.status_code == 200
     assert req_res.json()["completionRequested"] is True
 
-    # Team Leader rejects completion -> returns to in-progress
+    # Manager attempts to reject completion -> 403 Forbidden
+    mgr_reject_res = client.post(
+        f"/api/tasks/{task_id}/reject-completion",
+        json={"reason": "Manager review"},
+        headers={"X-User-Role": "manager", "X-User-Name": "Engineering Manager"}
+    )
+    assert mgr_reject_res.status_code == 403
+    assert "Only Team Leader (TL) has the authority to reject task completion" in mgr_reject_res.json()["detail"]
+
+    # Team Leader rejects completion -> returns to in-progress (200 OK)
     tl_reject_res = client.post(
         f"/api/tasks/{task_id}/reject-completion",
         json={"reason": "Need additional unit tests"},
@@ -377,6 +408,65 @@ def test_member_profile_picture_and_contact_details_update():
     assert arun is not None
     assert arun["phone"] == "+1 (555) 019-2834"
     assert arun["picture"] == profile_payload["picture"]
+
+def test_role_login_validation():
+    # 1. Manager portal tests
+    mgr_valid = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.mgr@taskflow.cloud", "role": "manager"})
+    assert mgr_valid.status_code == 200
+    assert mgr_valid.json()["authorized"] is True
+
+    mgr_with_tl = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.tl@taskflow.cloud", "role": "manager"})
+    assert mgr_with_tl.status_code == 200
+    assert mgr_with_tl.json()["authorized"] is False
+    assert "Team Leader" in mgr_with_tl.json()["message"]
+    assert "Invalid email" in mgr_with_tl.json()["message"]
+
+    mgr_with_emp = client.post("/api/teams/validate-role-login", json={"email": "arun@taskflow.cloud", "role": "manager"})
+    assert mgr_with_emp.status_code == 200
+    assert mgr_with_emp.json()["authorized"] is False
+    assert "Employee" in mgr_with_emp.json()["message"]
+    assert "Invalid email" in mgr_with_emp.json()["message"]
+
+    # 2. Team Leader portal tests
+    tl_valid = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.tl@taskflow.cloud", "role": "teamleader"})
+    assert tl_valid.status_code == 200
+    assert tl_valid.json()["authorized"] is True
+
+    tl_with_mgr = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.mgr@taskflow.cloud", "role": "teamleader"})
+    assert tl_with_mgr.status_code == 200
+    assert tl_with_mgr.json()["authorized"] is False
+    assert "Manager" in tl_with_mgr.json()["message"]
+    assert "Invalid email" in tl_with_mgr.json()["message"]
+
+    tl_with_emp = client.post("/api/teams/validate-role-login", json={"email": "arun@taskflow.cloud", "role": "teamleader"})
+    assert tl_with_emp.status_code == 200
+    assert tl_with_emp.json()["authorized"] is False
+    assert "Employee" in tl_with_emp.json()["message"]
+    assert "Invalid email" in tl_with_emp.json()["message"]
+
+    # 3. Employee portal tests
+    emp_valid = client.post("/api/teams/validate-role-login", json={"email": "arun@taskflow.cloud", "role": "employee"})
+    assert emp_valid.status_code == 200
+    assert emp_valid.json()["authorized"] is True
+
+    emp_with_mgr = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.mgr@taskflow.cloud", "role": "employee"})
+    assert emp_with_mgr.status_code == 200
+    assert emp_with_mgr.json()["authorized"] is False
+    assert "Manager" in emp_with_mgr.json()["message"]
+    assert "Invalid email" in emp_with_mgr.json()["message"]
+
+    emp_with_tl = client.post("/api/teams/validate-role-login", json={"email": "sabarinathan.tl@taskflow.cloud", "role": "employee"})
+    assert emp_with_tl.status_code == 200
+    assert emp_with_tl.json()["authorized"] is False
+    assert "Team Leader" in emp_with_tl.json()["message"]
+    assert "Invalid email" in emp_with_tl.json()["message"]
+
+    # 4. Unknown email tests
+    unknown_emp = client.post("/api/teams/validate-role-login", json={"email": "unknown@taskflow.cloud", "role": "employee"})
+    assert unknown_emp.status_code == 200
+    assert unknown_emp.json()["authorized"] is False
+    assert "not registered in any team squad roster" in unknown_emp.json()["message"]
+
 
 
 

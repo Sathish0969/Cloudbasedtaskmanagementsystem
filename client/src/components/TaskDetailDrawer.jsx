@@ -141,6 +141,7 @@ export default function TaskDetailDrawer({
 
   // Save changes
   const handleSave = async (overrides = {}) => {
+    if (role === 'manager') return;
     const payload = {
       title: overrides.title !== undefined ? overrides.title : title,
       description: overrides.description !== undefined ? overrides.description : description,
@@ -159,6 +160,7 @@ export default function TaskDetailDrawer({
 
   // Status Change
   const handleSelectStatus = async (newStatus) => {
+    if (role === 'manager') return;
     setStatus(newStatus);
     onStatusChange(task.id, newStatus);
     if (role === 'employee' && newStatus === 'completed') {
@@ -169,6 +171,7 @@ export default function TaskDetailDrawer({
 
   // Priority Change
   const handleSelectPriority = async (newPriority) => {
+    if (role === 'manager') return;
     setPriority(newPriority);
     handleSave({ priority: newPriority });
   };
@@ -310,11 +313,13 @@ export default function TaskDetailDrawer({
               className={`tf-drawer-status-select tf-status-${status}`}
               value={status}
               onChange={(e) => handleSelectStatus(e.target.value)}
+              disabled={role === 'manager'}
+              title={role === 'manager' ? 'Managers have view-only access. Only Team Leader can approve or modify task status.' : 'Change status'}
             >
               <option value="to-do">To Do</option>
               <option value="in-progress">In Progress</option>
               <option value="in-review">In Review</option>
-              <option value="completed">{role === 'employee' ? 'Completed (Request TL Approval)' : 'Completed'}</option>
+              <option value="completed">{role === 'employee' ? 'Completed (Request TL Approval)' : role === 'manager' ? 'Completed (TL Approval Required)' : 'Completed'}</option>
               <option value="overdue">Overdue</option>
               <option value="backlog">Backlog</option>
             </select>
@@ -324,6 +329,8 @@ export default function TaskDetailDrawer({
               className={`tf-drawer-priority-select tf-priority-${priority}`}
               value={priority}
               onChange={(e) => handleSelectPriority(e.target.value)}
+              disabled={role === 'manager'}
+              title={role === 'manager' ? 'Managers have view-only access.' : 'Change priority'}
             >
               <option value="low">Low Priority</option>
               <option value="medium">Medium Priority</option>
@@ -333,8 +340,8 @@ export default function TaskDetailDrawer({
           </div>
 
           <div className="tf-drawer-header-actions">
-            {/* Direct Task Removal button (hidden for employee) */}
-            {role !== 'employee' && (
+            {/* Direct Task Removal button (Exclusive to Team Leader) */}
+            {role === 'teamleader' && (
               <button
                 className="tf-drawer-btn-danger"
                 onClick={() => setConfirmDelete(true)}
@@ -360,13 +367,17 @@ export default function TaskDetailDrawer({
               </div>
               <div className="tf-approval-banner-text">
                 <div className="tf-approval-banner-title">
-                  {role === 'teamleader' || role === 'manager' 
+                  {role === 'teamleader'
                     ? 'Completion Approval Requested' 
+                    : role === 'manager'
+                    ? 'Completion Awaiting Team Leader Approval'
                     : 'Completion Awaiting TL Approval'}
                 </div>
                 <p className="tf-approval-banner-desc">
-                  {role === 'teamleader' || role === 'manager'
+                  {role === 'teamleader'
                     ? `${task.completionRequestedBy || 'An employee'} marked this task as completed. Review the deliverables and confirm approval or request revisions.`
+                    : role === 'manager'
+                    ? `${task.completionRequestedBy || 'An employee'} marked this task as completed. It is currently awaiting approval from the Team Leader (Managers have view-only access).`
                     : 'You submitted this task for completion. It is currently in review and requires approval from your Team Leader before it is marked completed.'}
                 </p>
                 {task.completionNotes && (
@@ -377,7 +388,7 @@ export default function TaskDetailDrawer({
               </div>
             </div>
 
-            {(role === 'teamleader' || role === 'manager') && (
+            {role === 'teamleader' && (
               <div className="tf-approval-banner-actions">
                 <button
                   type="button"
@@ -405,7 +416,7 @@ export default function TaskDetailDrawer({
         )}
 
         {/* Delete Confirmation Alert Banner */}
-        {confirmDelete && role !== 'employee' && (
+        {confirmDelete && role === 'teamleader' && (
           <div className="tf-delete-confirm-banner">
             <div className="tf-confirm-text">
               <AlertCircle size={18} />
@@ -473,7 +484,9 @@ export default function TaskDetailDrawer({
                   type="text"
                   className="tf-drawer-title-input"
                   value={title}
+                  readOnly={role === 'manager'}
                   onChange={(e) => {
+                    if (role === 'manager') return;
                     setTitle(e.target.value);
                     setIsDirty(true);
                   }}
@@ -489,7 +502,9 @@ export default function TaskDetailDrawer({
                   className="tf-drawer-desc-textarea"
                   rows={4}
                   value={description}
+                  readOnly={role === 'manager'}
                   onChange={(e) => {
+                    if (role === 'manager') return;
                     setDescription(e.target.value);
                     setIsDirty(true);
                   }}

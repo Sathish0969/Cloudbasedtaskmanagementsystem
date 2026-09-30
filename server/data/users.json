@@ -1,0 +1,35 @@
+[
+  {
+    "id": "usr-mgr-101",
+    "name": "Sabarinathan V",
+    "email": "sabarinathan.mgr@taskflow.cloud",
+    "role": "manager",
+    "title": "Engineering Manager",
+    "department": "Engineering Operations",
+    "location": "San Francisco, CA (HQ)",
+    "picture": null,
+    "createdAt": "2026-09-18T09:00:00"
+  },
+  {
+    "id": "usr-tl-103",
+    "name": "Sabarinathan V",
+    "email": "sabarinathan.tl@taskflow.cloud",
+    "role": "teamleader",
+    "title": "Team Leader (TL)",
+    "department": "Sprint Architecture & Cloud Engineering",
+    "location": "San Francisco, CA / Remote",
+    "picture": null,
+    "createdAt": "2026-09-18T09:00:00"
+  },
+  {
+    "id": "usr-emp-102",
+    "name": "Sabarinathan V",
+    "email": "sabarinathan.emp@taskflow.cloud",
+    "role": "employee",
+    "title": "Senior Cloud Engineer",
+    "department": "Cloud & Core Infrastructure",
+    "location": "San Francisco, CA / Remote",
+    "picture": null,
+    "createdAt": "2026-09-18T09:00:00"
+  }
+]

@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck, AlertCircle, Users, CheckCircle2, Camera, Phone, MapPin, Briefcase, Sparkles } from 'lucide-react';
-import { fetchAuthorizedMembers, verifyTeamMemberEmail } from '../services/api';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Check, User, ShieldCheck, AlertCircle, Users, CheckCircle2, Camera, Phone, MapPin, Briefcase, Sparkles, ArrowRight } from 'lucide-react';
+import { fetchAuthorizedMembers, verifyTeamMemberEmail, validateRoleLogin, registerAccount } from '../services/api';
+
+const DEFAULT_MANAGERS = [
+  { name: 'Sabarinathan V (Manager)', email: 'sabarinathan.mgr@taskflow.cloud', role: 'manager', title: 'Engineering Manager', department: 'Engineering Operations' },
+  { name: 'Engineering Operations Manager', email: 'manager@taskflow.cloud', role: 'manager', title: 'Senior Manager', department: 'Executive Management' }
+];
+
+const DEFAULT_TEAM_LEADERS = [
+  { name: 'Sabarinathan V (TL)', email: 'sabarinathan.tl@taskflow.cloud', role: 'teamleader', title: 'Team Leader (TL)', department: 'Sprint Architecture & Cloud Engineering' },
+  { name: 'Sprint Lead', email: 'teamleader@taskflow.cloud', role: 'teamleader', title: 'Technical Lead', department: 'Core Infrastructure' }
+];
 
 const DEFAULT_FALLBACK_MEMBERS = [
   { name: 'Sabarinathan V', email: 'sabarinathan.emp@taskflow.cloud', role: 'Senior Cloud Engineer', teamName: 'Cloud & Core Infrastructure Squad', avatar: 'S' },
@@ -44,6 +54,7 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [formError, setFormError] = useState('');
+  const [suggestedRole, setSuggestedRole] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const PRESET_AVATARS = [
@@ -75,16 +86,15 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
       }
     };
 
-    if (isEmployee) {
-      loadRoster();
-    }
+    loadRoster();
     return () => { mounted = false; };
-  }, [isEmployee]);
+  }, []);
 
   // Sync state when role or initialMode changes
   useEffect(() => {
     setAuthMode(initialMode);
     setFormError('');
+    setSuggestedRole(null);
     if (initialMode === 'create-account') {
       setFullName('');
       setEmail('');
@@ -98,20 +108,65 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
     }
   }, [initialMode, role, defaultEmail, isEmployee, isTL]);
 
+  // Helper function to detect what role an email belongs to
+  const detectLocalRole = (checkEmail) => {
+    const clean = (checkEmail || '').trim().toLowerCase();
+    if (!clean) return null;
+
+    // Check Manager
+    if (
+      DEFAULT_MANAGERS.some((m) => m.email.toLowerCase() === clean) ||
+      clean.includes('.mgr@') ||
+      clean.startsWith('manager@') ||
+      clean.includes('sabarinathan.mgr')
+    ) {
+      return 'manager';
+    }
+
+    // Check Team Leader
+    if (
+      DEFAULT_TEAM_LEADERS.some((t) => t.email.toLowerCase() === clean) ||
+      clean.includes('.tl@') ||
+      clean.startsWith('teamleader@') ||
+      clean.includes('sabarinathan.tl')
+    ) {
+      return 'teamleader';
+    }
+
+    // Check Employee roster
+    const roster = authorizedMembers && authorizedMembers.length > 0 ? authorizedMembers : DEFAULT_FALLBACK_MEMBERS;
+    if (
+      roster.some((m) => (m.email || '').trim().toLowerCase() === clean) ||
+      clean.includes('.emp@') ||
+      clean.startsWith('employee@')
+    ) {
+      return 'employee';
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
+    setSuggestedRole(null);
 
     const trimmedEmail = (email || '').trim().toLowerCase();
     const trimmedName = (fullName || '').trim();
 
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      setFormError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password || password.trim().length === 0) {
+      setFormError('Please enter your password.');
+      return;
+    }
+
     if (isRegister) {
       if (!trimmedName) {
         setFormError('Please enter your full name.');
-        return;
-      }
-      if (!trimmedEmail || !trimmedEmail.includes('@')) {
-        setFormError('Please enter a valid email address.');
         return;
       }
       if (password !== confirmPassword) {
@@ -122,85 +177,176 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
         setFormError('Password must be at least 6 characters.');
         return;
       }
-    } else {
-      if (!trimmedEmail || !trimmedEmail.includes('@')) {
-        setFormError('Please enter a valid email address.');
-        return;
-      }
-    }
 
-    setIsSubmitting(true);
-
-    // Rule: ONLY team members whose employee email IDs are stored by the TL can log in as Employee!
-    if (isEmployee) {
+      setIsSubmitting(true);
       try {
-        let verifiedMember = null;
-
-        // 1. Try server verification endpoint
+        let regRes = null;
         try {
-          const verifyRes = await verifyTeamMemberEmail(trimmedEmail);
-          if (verifyRes && verifyRes.authorized && verifyRes.member) {
-            verifiedMember = verifyRes.member;
-          }
+          regRes = await registerAccount(trimmedEmail, role);
         } catch {
-          // Server offline / fallback check
+          // Fallback offline
         }
 
-        // 2. Fallback check against loaded or cached roster
-        if (!verifiedMember) {
-          const listToCheck = authorizedMembers.length > 0 ? authorizedMembers : DEFAULT_FALLBACK_MEMBERS;
-          verifiedMember = listToCheck.find(
-            (m) => (m.email || '').trim().toLowerCase() === trimmedEmail
-          );
-        }
+        if (regRes) {
+          if (!regRes.authorized) {
+            setIsSubmitting(false);
+            setFormError(regRes.message || 'Registration failed.');
+            if (regRes.role && regRes.role !== role) {
+              setSuggestedRole(regRes.role);
+            }
+            return;
+          }
 
-        if (!verifiedMember) {
           setIsSubmitting(false);
-          setFormError(
-            `🚫 Access Denied: Only team members added by the Team Leader can login. The email "${email}" is not registered in any team squad roster. Please contact your Team Leader to add your employee email ID.`
-          );
+          const u = regRes.user || {};
+          onLoginSuccess({
+            role,
+            name: trimmedName || u.name || 'User',
+            email: trimmedEmail,
+            title: u.title || (isManager ? 'Engineering Manager' : isTL ? 'Team Leader (TL)' : 'Software Engineer'),
+            picture: picture || u.picture || '',
+            phone: phone || u.phone || '',
+            department: department || u.department || '',
+            location: location || u.location || '',
+            bio: bio || u.bio || ''
+          });
           return;
         }
 
-        // Successfully verified as authorized team member!
+        // Local registration fallback
+        const localDetected = detectLocalRole(trimmedEmail);
+        if (localDetected && localDetected !== role) {
+          setIsSubmitting(false);
+          const detTitle = localDetected === 'manager' ? 'Manager' : localDetected === 'teamleader' ? 'Team Leader' : 'Employee';
+          setFormError(`Registration conflict: '${trimmedEmail}' is already registered as a ${detTitle}. Please log in via the ${detTitle} portal.`);
+          setSuggestedRole(localDetected);
+          return;
+        }
+
         setIsSubmitting(false);
         onLoginSuccess({
-          role: 'employee',
-          name: verifiedMember.name || trimmedName || 'Team Member',
-          email: verifiedMember.email || trimmedEmail,
-          title: verifiedMember.role || 'Senior Cloud Engineer',
-          avatar: verifiedMember.avatar || (verifiedMember.name ? verifiedMember.name[0].toUpperCase() : 'E'),
-          picture: picture || verifiedMember.picture || '',
-          phone: phone || verifiedMember.phone || '',
-          department: department || verifiedMember.department || '',
-          location: location || verifiedMember.location || '',
-          bio: bio || verifiedMember.bio || '',
-          teamName: verifiedMember.teamName || 'Assigned Squad',
-          teamId: verifiedMember.teamId
+          role,
+          name: trimmedName,
+          email: trimmedEmail,
+          title: isManager ? 'Engineering Manager' : isTL ? 'Team Leader (TL)' : 'Software Engineer',
+          picture: picture || '',
+          phone: phone || '',
+          department: department || (isManager ? 'Engineering Operations' : isTL ? 'Sprint Architecture' : 'Cloud Engineering'),
+          location: location || 'San Francisco, CA / Remote',
+          bio: bio || ''
         });
         return;
       } catch (err) {
         setIsSubmitting(false);
-        setFormError(err.message || 'Verification error during login');
+        setFormError(err.message || 'Registration error');
         return;
       }
     }
 
-    // Manager / Team Leader standard authentication
-    setTimeout(() => {
+    // LOGIN MODE: Strict Role Verification
+    setIsSubmitting(true);
+    try {
+      // 1. Verify via backend validation endpoint
+      let validateRes = null;
+      try {
+        validateRes = await validateRoleLogin(trimmedEmail, role);
+      } catch {
+        // Backend offline / connection error, fall through to client-side logic
+      }
+
+      if (validateRes) {
+        if (!validateRes.authorized) {
+          setIsSubmitting(false);
+          setFormError(validateRes.message || `Invalid email: Access denied for ${roleDisplayName}.`);
+          if (validateRes.role && validateRes.role !== role) {
+            setSuggestedRole(validateRes.role);
+          }
+          return;
+        }
+
+        // Authorized successfully by backend
+        setIsSubmitting(false);
+        const userData = validateRes.user || {};
+        onLoginSuccess({
+          role,
+          name: userData.name || trimmedName || (isTL ? 'Sabarinathan V (TL)' : isManager ? 'Sabarinathan V (Manager)' : 'Team Member'),
+          email: userData.email || trimmedEmail,
+          title: userData.title || (isTL ? 'Team Leader (TL)' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer'),
+          avatar: userData.avatar || (userData.name ? userData.name[0].toUpperCase() : 'U'),
+          picture: picture || userData.picture || '',
+          phone: phone || userData.phone || '',
+          department: department || userData.department || (isManager ? 'Engineering Operations' : isTL ? 'Sprint Architecture' : 'Cloud Engineering'),
+          location: location || userData.location || 'San Francisco, CA / Remote',
+          bio: bio || userData.bio || '',
+          teamName: userData.teamName || (isEmployee ? 'Assigned Squad' : undefined),
+          teamId: userData.teamId
+        });
+        return;
+      }
+
+      // 2. Client-side strict fallback validation
+      const detectedRole = detectLocalRole(trimmedEmail);
+      const roleTitles = {
+        manager: 'Manager',
+        teamleader: 'Team Leader',
+        employee: 'Employee'
+      };
+      const currentRoleTitle = roleTitles[role] || role;
+
+      // If email belongs to another role
+      if (detectedRole && detectedRole !== role) {
+        const detTitle = roleTitles[detectedRole] || detectedRole;
+        setIsSubmitting(false);
+        setFormError(
+          `🚫 Invalid email: "${trimmedEmail}" is registered as a ${detTitle}. Only authorized ${currentRoleTitle}s can log in to the ${currentRoleTitle} portal. Please switch to the ${detTitle} portal to log in.`
+        );
+        setSuggestedRole(detectedRole);
+        return;
+      }
+
+      // If email is not recognized for this role
+      if (!detectedRole) {
+        setIsSubmitting(false);
+        if (isManager) {
+          setFormError(`🚫 Invalid email: No Manager account found with "${trimmedEmail}". Only authorized Managers can log in.`);
+        } else if (isTL) {
+          setFormError(`🚫 Invalid email: No Team Leader account found with "${trimmedEmail}". Only assigned Team Leaders can log in.`);
+        } else {
+          setFormError(`🚫 Invalid email: "${trimmedEmail}" is not registered in any team squad roster. Only team members added by the Team Leader can log in.`);
+        }
+        return;
+      }
+
+      // Success locally
       setIsSubmitting(false);
+      let localUser = {};
+      if (isEmployee) {
+        const listToCheck = authorizedMembers.length > 0 ? authorizedMembers : DEFAULT_FALLBACK_MEMBERS;
+        localUser = listToCheck.find((m) => (m.email || '').trim().toLowerCase() === trimmedEmail) || {};
+      } else if (isTL) {
+        localUser = DEFAULT_TEAM_LEADERS.find((t) => t.email.toLowerCase() === trimmedEmail) || {};
+      } else {
+        localUser = DEFAULT_MANAGERS.find((m) => m.email.toLowerCase() === trimmedEmail) || {};
+      }
+
       onLoginSuccess({
         role,
-        name: trimmedName || (isTL ? 'Sabarinathan V (TL)' : isManager ? 'Sabarinathan V (Manager)' : 'Sabarinathan V'),
-        email: trimmedEmail || defaultEmail,
-        title: isTL ? 'Team Leader / Technical Lead' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer',
-        picture: picture || '',
-        phone: phone || '',
-        department: department || (isManager ? 'Engineering Operations' : isTL ? 'Sprint Architecture' : 'Cloud Engineering'),
-        location: location || 'San Francisco, CA / Remote',
-        bio: bio || ''
+        name: localUser.name || trimmedName || (isTL ? 'Sabarinathan V (TL)' : isManager ? 'Sabarinathan V (Manager)' : 'Team Member'),
+        email: localUser.email || trimmedEmail,
+        title: localUser.title || (isTL ? 'Team Leader (TL)' : isManager ? 'Engineering Manager' : 'Senior Cloud Engineer'),
+        avatar: localUser.avatar || 'U',
+        picture: picture || localUser.picture || '',
+        phone: phone || localUser.phone || '',
+        department: department || localUser.department || (isManager ? 'Engineering Operations' : isTL ? 'Sprint Architecture' : 'Cloud Engineering'),
+        location: location || localUser.location || 'San Francisco, CA / Remote',
+        bio: bio || localUser.bio || '',
+        teamName: localUser.teamName,
+        teamId: localUser.teamId
       });
-    }, 400);
+    } catch (err) {
+      setIsSubmitting(false);
+      setFormError(err.message || 'Authentication error during login');
+    }
   };
 
 
@@ -286,8 +432,22 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
 
             {formError && (
               <div className="tf-form-error-banner" role="alert">
-                <AlertCircle size={18} className="tf-error-icon" />
-                <span>{formError}</span>
+                <div className="tf-form-error-text-row">
+                  <AlertCircle size={18} className="tf-error-icon" />
+                  <span>{formError}</span>
+                </div>
+                {suggestedRole && (
+                  <button
+                    type="button"
+                    className="tf-switch-portal-btn"
+                    onClick={() => {
+                      onSelectRole(suggestedRole, 'login');
+                    }}
+                  >
+                    <span>Go to {suggestedRole === 'teamleader' ? 'Team Leader' : suggestedRole === 'manager' ? 'Manager' : 'Employee'} Portal</span>
+                    <ArrowRight size={14} />
+                  </button>
+                )}
               </div>
             )}
 
@@ -312,22 +472,35 @@ export default function AuthLogin({ role, initialMode = 'login', onBack, onSelec
                 </div>
               )}
 
-              {/* Email Field */}
+              {/* Email Field with Role-Specific Label */}
               <div className="tf-form-group">
-                <label htmlFor="login-email" className="tf-label">Employee Email Address</label>
+                <label htmlFor="login-email" className="tf-label">{roleDisplayName} Email Address</label>
                 <div className="tf-input-wrapper">
                   <Mail className="tf-input-icon" size={18} />
                   <input
                     id="login-email"
                     type="email"
                     className="tf-input"
-                    placeholder="e.g., arun@taskflow.cloud"
+                    placeholder={
+                      isManager 
+                        ? "e.g., sabarinathan.mgr@taskflow.cloud" 
+                        : isTL 
+                        ? "e.g., sabarinathan.tl@taskflow.cloud" 
+                        : "e.g., arun@taskflow.cloud or sabarinathan.emp@taskflow.cloud"
+                    }
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (formError) {
+                        setFormError('');
+                        setSuggestedRole(null);
+                      }
+                    }}
                     required
                   />
                 </div>
               </div>
+
 
 
 

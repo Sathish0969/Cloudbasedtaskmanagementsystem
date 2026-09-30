@@ -90,9 +90,9 @@ export default function TaskTable({
       return (
         <span 
           className="tf-status-badge tf-badge-pending-tl" 
-          title={isTL || isManager ? "Employee marked task completed. Needs your approval." : "Awaiting Team Leader approval"}
+          title={isTL ? "Employee marked task completed. Needs your approval." : "Awaiting Team Leader approval"}
         >
-          ⏳ {isTL || isManager ? 'Awaiting Approval' : 'Pending TL Approval'}
+          ⏳ {isTL ? 'Awaiting Approval' : 'Pending TL Approval'}
         </span>
       );
     }
@@ -299,7 +299,7 @@ export default function TaskTable({
                           {getStatusBadge(task.status, task)}
                         </div>
 
-                        {task.completionRequested && (isTL || isManager) && (
+                        {task.completionRequested && isTL && (
                           <div className="tf-tl-quick-actions" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
@@ -337,8 +337,8 @@ export default function TaskTable({
 
                         {openActionId === task.id && (
                           <div className="tf-action-dropdown">
-                            {/* Completion Approval Section for TL / Manager */}
-                            {task.completionRequested && (isTL || isManager) && (
+                            {/* Completion Approval Section for TL ONLY */}
+                            {task.completionRequested && isTL && (
                               <>
                                 <button
                                   type="button"
@@ -375,59 +375,65 @@ export default function TaskTable({
                               }}
                             >
                               <Maximize2 size={14} />
-                              <span>Open Task Details</span>
+                              <span>{isManager ? 'View Task Details' : 'Open Task Details'}</span>
                             </button>
 
-                            <button
-                              type="button"
-                              className="tf-dropdown-row"
-                              onClick={() => {
-                                setOpenActionId(null);
-                                onEditTask(task);
-                              }}
-                            >
-                              <Edit2 size={14} />
-                              <span>Quick Edit Modal</span>
-                            </button>
+                            {!isManager && (
+                              <button
+                                type="button"
+                                className="tf-dropdown-row"
+                                onClick={() => {
+                                  setOpenActionId(null);
+                                  onEditTask(task);
+                                }}
+                              >
+                                <Edit2 size={14} />
+                                <span>Quick Edit Modal</span>
+                              </button>
+                            )}
 
-                            <div className="tf-dropdown-divider"></div>
-                            
-                            <div className="tf-dropdown-submenu-header">Move Status</div>
-                            <button
-                              type="button"
-                              className="tf-dropdown-row"
-                              onClick={() => {
-                                setOpenActionId(null);
-                                onStatusChange(task.id, 'to-do');
-                              }}
-                            >
-                              <Clock size={14} />
-                              <span>Mark To Do</span>
-                            </button>
-                            <button
-                              type="button"
-                              className="tf-dropdown-row"
-                              onClick={() => {
-                                setOpenActionId(null);
-                                onStatusChange(task.id, 'in-progress');
-                              }}
-                            >
-                              <Clock size={14} />
-                              <span>Mark In Progress</span>
-                            </button>
-                            <button
-                              type="button"
-                              className="tf-dropdown-row"
-                              onClick={() => {
-                                setOpenActionId(null);
-                                onStatusChange(task.id, 'completed');
-                              }}
-                            >
-                              <CheckCircle2 size={14} />
-                              <span>{role === 'employee' ? 'Request Completion Approval' : 'Mark Completed'}</span>
-                            </button>
+                            {!isManager && (
+                              <>
+                                <div className="tf-dropdown-divider"></div>
+                                
+                                <div className="tf-dropdown-submenu-header">Move Status</div>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onStatusChange(task.id, 'to-do');
+                                  }}
+                                >
+                                  <Clock size={14} />
+                                  <span>Mark To Do</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onStatusChange(task.id, 'in-progress');
+                                  }}
+                                >
+                                  <Clock size={14} />
+                                  <span>Mark In Progress</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="tf-dropdown-row"
+                                  onClick={() => {
+                                    setOpenActionId(null);
+                                    onStatusChange(task.id, 'completed');
+                                  }}
+                                >
+                                  <CheckCircle2 size={14} />
+                                  <span>{role === 'employee' ? 'Request Completion Approval' : 'Mark Completed'}</span>
+                                </button>
+                              </>
+                            )}
 
-                            {role !== 'employee' && (
+                            {isTL && (
                               <>
                                 <div className="tf-dropdown-divider"></div>
                                 <button

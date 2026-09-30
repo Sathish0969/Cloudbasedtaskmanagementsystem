@@ -25,6 +25,7 @@ def _verify_password(password: str, stored_hash: str, salt: str) -> bool:
     candidate_hash, _ = _hash_password(password, salt)
     return secrets.compare_digest(candidate_hash, stored_hash)
 
+DEFAULT_USERS = [
     {
         "id": "usr-mgr-101",
         "name": "Sabarinathan V",

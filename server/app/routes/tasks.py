@@ -57,7 +57,19 @@ async def create_task(
     return created
 
 @router.put("/{task_id}", response_model=TaskOut)
-async def update_task(task_id: str, task_in: TaskUpdate):
+async def update_task(
+    task_id: str, 
+    task_in: TaskUpdate,
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user")
+):
+    if x_user_role:
+        role_normalized = x_user_role.strip().lower()
+        if role_normalized == "manager":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access Denied: Managers have view-only access on tasks. Tasks can only be modified by the Team Leader (TL)."
+            )
+
     storage = get_storage_service()
     updated = await storage.update(task_id, task_in.model_dump(exclude_unset=True))
     if not updated:
@@ -85,6 +97,13 @@ async def update_task_status(
     from datetime import datetime
     now = datetime.now().isoformat()
 
+    # Rule: Manager only sees tasks and cannot alter status or approve completion.
+    if role_normalized == "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: Managers have view-only access on tasks and cannot approve task completion or alter status. Task completion is approved exclusively by the Team Leader."
+        )
+
     # Rule: If an employee marks a task as completed, it must NOT directly complete.
     # It must go to Team Leader (TL) for confirmation and approval (status: in-review, completionRequested: True).
     if status_in.status.lower() == "completed" and role_normalized == "employee":
@@ -111,7 +130,7 @@ async def update_task_status(
         })
         return updated
 
-    # If completed by TL or Manager, confirm and approve completion
+    # If completed by TL, confirm and approve completion
     if status_in.status.lower() == "completed":
         updated = await storage.update(task_id, {
             "status": "completed",
@@ -171,10 +190,10 @@ async def approve_task_completion(
     x_user_name: Optional[str] = Header(None, alias="X-User-Name")
 ):
     role_normalized = (x_user_role or "").strip().lower()
-    if role_normalized == "employee":
+    if role_normalized != "teamleader":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access Denied: Only Team Leader or Manager approval required."
+            detail="Access Denied: Only Team Leader (TL) has the authority to approve task completion. Managers have view-only access."
         )
 
     approver = user_name or x_user_name or "Sabarinathan V (TL)"
@@ -204,10 +223,10 @@ async def reject_task_completion(
     x_user_name: Optional[str] = Header(None, alias="X-User-Name")
 ):
     role_normalized = (x_user_role or "").strip().lower()
-    if role_normalized == "employee":
+    if role_normalized != "teamleader":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access Denied: Only Team Leader (TL) has the authority to reject task completion."
+            detail="Access Denied: Only Team Leader (TL) has the authority to reject task completion. Managers have view-only access."
         )
 
     rejecter = user_name or x_user_name or "Sabarinathan V (TL)"
@@ -229,13 +248,13 @@ async def delete_task(
     task_id: str,
     x_user_role: Optional[str] = Header(None, alias="X-User-Role", description="Role of the requesting user")
 ):
-    # Enforce role-based access control: Employees cannot delete tasks
+    # Enforce role-based access control: Only Team Leader can delete tasks
     if x_user_role:
         role_normalized = x_user_role.strip().lower()
-        if role_normalized == "employee":
+        if role_normalized in ["manager", "employee"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access Denied: Employees do not have permission to delete tasks."
+                detail="Access Denied: Managers and Employees cannot delete tasks. Only Team Leader (TL) has delete authority."
             )
 
     storage = get_storage_service()

@@ -53,11 +53,77 @@ const AVAILABLE_CANDIDATES = [
   { name: 'Vikram S', email: 'vikram@taskflow.cloud', role: 'Security Analyst' }
 ];
 
+// Member Avatar component with automatic error reset & fallback
+function MemberAvatar({ member }) {
+  const [imgError, setImgError] = useState(false);
+  const pic = member?.picture;
+
+  useEffect(() => {
+    setImgError(false);
+  }, [pic]);
+
+  const initial = member?.avatar || (member?.name ? member.name[0].toUpperCase() : 'U');
+
+  return (
+    <div className="tf-member-avatar-wrap">
+      <div className="tf-member-avatar">
+        <span className="tf-member-initial">{initial}</span>
+        {pic && !imgError && (
+          <img 
+            src={pic} 
+            alt={member?.name || 'Member'} 
+            className="tf-member-avatar-img"
+            onError={() => setImgError(true)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Modal Avatar Preview with live preview & file upload
+function ModalAvatarPreview({ name, picture, onUpload }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [picture]);
+
+  const initial = name ? name[0].toUpperCase() : 'U';
+
+  return (
+    <div className="tf-profile-pic-preview-wrap">
+      <div className="tf-profile-pic-placeholder">
+        {initial}
+      </div>
+      {picture && !imgError && (
+        <img 
+          src={picture} 
+          alt="Preview" 
+          className="tf-profile-pic-preview" 
+          style={{ position: 'absolute', top: 0, left: 0 }}
+          onError={() => setImgError(true)}
+        />
+      )}
+      <label className="tf-upload-btn-overlay" title="Upload new photo from computer">
+        <Camera size={16} />
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={onUpload} 
+          style={{ display: 'none' }} 
+        />
+      </label>
+    </div>
+  );
+}
+
 export default function TeamView({
   role = 'manager',
   user = { name: 'Sabarinathan V' },
   tasks = [],
-  addToast = () => {}
+  addToast = () => {},
+  onUpdateUser = () => {}
 }) {
   const isTL = role === 'teamleader';
   const isEmployee = role === 'employee';
@@ -284,6 +350,15 @@ export default function TeamView({
 
       const updatedTeam = await updateTeamMember(editingMember.teamId, editingMember.id || editingMember.name, updates);
       setTeams((prev) => prev.map((t) => (t.id === editingMember.teamId ? updatedTeam : t)));
+
+      // If updated member is current logged-in user, synchronize active user state
+      if (onUpdateUser && (user?.email || '').toLowerCase() === (editingMember.email || '').toLowerCase()) {
+        onUpdateUser(prev => ({
+          ...prev,
+          ...updates
+        }));
+      }
+
       addToast(`Updated profile & contact details for ${editingMember.name}!`, 'success');
       setEditingMember(null);
     } catch (err) {
@@ -790,19 +865,7 @@ export default function TeamView({
 
                     return (
                       <div key={member.id || member.name} className="tf-member-row">
-                        <div className="tf-member-avatar-wrap">
-                          <div className="tf-member-avatar">
-                            {member.picture ? (
-                              <img 
-                                src={member.picture} 
-                                alt={member.name} 
-                                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
-                              />
-                            ) : (
-                              <span>{member.avatar || member.name[0]}</span>
-                            )}
-                          </div>
-                        </div>
+                        <MemberAvatar member={member} />
 
                         <div className="tf-member-details">
                           <div className="tf-member-name-row">
@@ -853,31 +916,20 @@ export default function TeamView({
                           </span>
                         </div>
 
-                        {/* Member Action Controls */}
-                        <div className="tf-member-actions-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <button
-                            type="button"
-                            className="tf-btn-action-icon"
-                            onClick={() => setEditingMember({ ...member, teamId: team.id })}
-                            title={`Edit ${member.name}'s profile picture and contact details`}
-                          >
-                            <Edit3 size={14} />
-                            <span style={{ fontSize: '0.78rem', marginLeft: '4px' }}>Edit</span>
-                          </button>
-
-                          {/* Kick Out / Remove Button (STRICTLY TL ONLY) */}
-                          {isTL && (
+                        {/* Member Action Controls (TL has Remove access; Edit option removed as requested) */}
+                        {isTL && (
+                          <div className="tf-member-actions-group">
                             <button
                               type="button"
                               className="tf-btn-kickout"
                               onClick={() => setKickoutTarget({ teamId: team.id, memberName: member.name, memberId: member.id })}
                               title={`Remove ${member.name} from squad & revoke login access`}
                             >
-                              <UserMinus size={14} />
+                              <UserMinus size={13} />
                               <span>Remove</span>
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -909,40 +961,38 @@ export default function TeamView({
             <form onSubmit={handleSaveMemberProfile} className="tf-profile-form">
               {/* Picture Preview and Selection */}
               <div className="tf-profile-pic-section">
-                <div className="tf-profile-pic-preview-wrap">
-                  {editingMember.picture ? (
-                    <img src={editingMember.picture} alt="Preview" className="tf-profile-pic-preview" />
-                  ) : (
-                    <div className="tf-profile-pic-placeholder">
-                      {editingMember.name ? editingMember.name[0].toUpperCase() : 'U'}
-                    </div>
-                  )}
-                  <label className="tf-upload-btn-overlay" title="Upload new photo">
-                    <Camera size={16} />
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          if (file.size > 2 * 1024 * 1024) {
-                            addToast('Profile picture must be under 2MB', 'error');
-                            return;
-                          }
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            setEditingMember(prev => ({ ...prev, picture: ev.target.result }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }} 
-                      style={{ display: 'none' }} 
-                    />
-                  </label>
-                </div>
+                <ModalAvatarPreview 
+                  name={editingMember.name} 
+                  picture={editingMember.picture} 
+                  onUpload={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 2 * 1024 * 1024) {
+                        addToast('Profile picture must be under 2MB', 'error');
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setEditingMember(prev => ({ ...prev, picture: ev.target.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                />
 
                 <div className="tf-profile-pic-inputs">
-                  <label className="tf-label">Profile Picture URL</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className="tf-label" style={{ margin: 0 }}>Profile Picture URL</label>
+                    {editingMember.picture && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingMember(prev => ({ ...prev, picture: '' }))}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.725rem', cursor: 'pointer', fontWeight: 600 }}
+                      >
+                        Remove photo (Use initials)
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="url"
                     className="tf-form-input"

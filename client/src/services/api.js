@@ -48,9 +48,13 @@ export async function createTask(taskData, role) {
 }
 
 export async function updateTask(id, taskData) {
+  const currentRole = localStorage.getItem('tf_role') || 'teamleader';
   const res = await fetch(`${API_BASE}/tasks/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-User-Role': currentRole,
+    },
     body: JSON.stringify(taskData),
   });
   if (!res.ok) {
@@ -345,6 +349,32 @@ export async function verifyTeamMemberEmail(email) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || 'Member verification check failed');
+  }
+  return res.json();
+}
+
+export async function validateRoleLogin(email, role) {
+  const res = await fetch(`${API_BASE}/teams/validate-role-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: (email || '').trim(), role: (role || '').trim() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Role login validation check failed');
+  }
+  return res.json();
+}
+
+export async function registerAccount(email, role) {
+  const res = await fetch(`${API_BASE}/teams/register-account`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: (email || '').trim(), role: (role || '').trim() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Account registration failed');
   }
   return res.json();
 }
