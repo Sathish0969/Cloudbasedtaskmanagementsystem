@@ -101,8 +101,18 @@ def _detect_user_role(email: str, teams: List[Dict[str, Any]], users: List[Dict[
     # 1. Check registered users list first
     for u in users:
         if (u.get("email") or "").strip().lower() == clean_email:
-            u_role = (u.get("role") or "").lower()
-            return u_role, u
+            u_role = (u.get("role") or "").strip().lower()
+
+            # Normalize roles for portal login
+            if u_role in ["manager", "mgr"]:
+                return "manager", u
+
+            if u_role in ["teamleader", "team_leader", "team leader", "tl"]:
+                return "teamleader", u
+
+            # Job roles such as frontend_engineer and backend_engineer
+            # use the Employee portal unless explicitly assigned another portal role.
+            return "employee", u
 
     # 2. Check team leader in active team rosters
     for t in teams:

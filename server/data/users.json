@@ -8,18 +8,44 @@
     "department": "Engineering Operations",
     "location": "San Francisco, CA (HQ)",
     "picture": null,
+    "specialty": "Sprint Velocity, Strategic Planning & Auditing",
     "createdAt": "2026-09-18T09:00:00"
   },
   {
     "id": "usr-tl-103",
-    "name": "Sabarinathan V",
+    "name": "Sabarinathan V (TL)",
     "email": "sabarinathan.tl@taskflow.cloud",
     "role": "teamleader",
     "title": "Team Leader (TL)",
-    "department": "Sprint Architecture & Cloud Engineering",
+    "department": "Sprint Architecture & Cloud Governance",
     "location": "San Francisco, CA / Remote",
     "picture": null,
+    "specialty": "Task Orchestration, Code Reviews & Approvals",
     "createdAt": "2026-09-18T09:00:00"
+  },
+  {
+    "id": "usr-fe-102",
+    "name": "Arun K",
+    "email": "arun@taskflow.cloud",
+    "role": "frontend_engineer",
+    "title": "Frontend & UI/UX Engineer",
+    "department": "Frontend Engineering",
+    "location": "San Francisco, CA",
+    "picture": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+    "specialty": "Design Systems, React UI & User Experience",
+    "createdAt": "2026-09-18T09:00:00"
+  },
+  {
+    "id": "usr-devops-108",
+    "name": "Gowtham G",
+    "email": "gowthamgopalakrishnan0207@gmail.com",
+    "role": "devops_engineer",
+    "title": "Backend & Cloud DevOps Engineer",
+    "department": "Cloud & Core Infrastructure",
+    "location": "Bangalore / Remote",
+    "picture": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+    "specialty": "AWS DynamoDB, S3, CI/CD & FastAPIs",
+    "createdAt": "2026-09-30T09:00:00"
   },
   {
     "id": "usr-emp-102",

@@ -50,9 +50,9 @@ async def list_tasks(
     storage = get_storage_service()
     all_tasks = await storage.get_all(status=status, priority=priority, search=search)
 
-    # Privacy Rule: An employee must NEVER see other employees' tasks!
+    # Privacy Rule: An engineer must NEVER see other engineers' tasks!
     role_normalized = (x_user_role or "").strip().lower()
-    if role_normalized == "employee":
+    if role_normalized in ["employee", "frontend_engineer", "devops_engineer"]:
         user_name = x_user_name or assigned_to
         all_tasks = [t for t in all_tasks if _is_task_assigned_to_user(t, user_name, x_user_email)]
     elif assigned_to:
